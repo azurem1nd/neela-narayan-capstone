@@ -29,3 +29,5 @@ AI-Involvement Level
 Target: Collaborative build — AI-assisted implementation, human-directed design.
 
 Reasoning: The conceptual design (visual metaphor, clustering logic, differentiation from existing tools) was developed independently through iterative refinement across multiple sessions. Implementation (data pipeline, clustering script, scaffolding) is being built with Claude Code as a coding partner, using Plan Mode before each significant implementation step so that architecture decisions are reviewed before code is written, not after. Every plan is reviewed and approved manually before execution; nothing is accepted un-reviewed. This keeps authorship of the idea and design decisions with me, while using AI to accelerate implementation of well-specified pieces.
+
+May need further refinements. 
