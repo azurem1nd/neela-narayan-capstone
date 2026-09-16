@@ -30,3 +30,9 @@ Target: Collaborative build — AI-assisted implementation, human-directed desig
 
 Reasoning: The conceptual design (visual metaphor, clustering logic, differentiation from existing tools) was developed independently through iterative refinement across multiple sessions. Implementation (data pipeline, clustering script, scaffolding) is being built with Claude Code as a coding partner, using Plan Mode before each significant implementation step so that architecture decisions are reviewed before code is written, not after. Every plan is reviewed and approved manually before execution; nothing is accepted un-reviewed. This keeps authorship of the idea and design decisions with me, while using AI to accelerate implementation of well-specified pieces.
 
+Added based on new learnings: 
+-  Onboarding / cold-start context
+Right now clustering is fully derived from listening history — no data yet, no clusters yet. Onboarding would mean asking the user something upfront (name, age, gender) so there is context to who the program is giving infiormation to.  T
+
+-  Manual inputs layer (add/remove songs from a cluster)
+This is already in  my stretch goals as "manual rename/merge/split of clusters, feeding back into future clustering." Adding/removing individual songs is a smaller, more granular version of the same idea. Not a new concept — just an earlier-arriving version of something you'd already planned.
