@@ -15,5 +15,7 @@
 - Because I was connecting to the Spotify API. It is in .env where credentials/configuration can live. Don't want an API secret accidentally appearing in a public GitHub repository.
 
 ## 2026-09-17
+- test project integrated with the gemini agent 
+
 
 
