@@ -33,10 +33,10 @@ Creating a playlist and populating it is **two separate API calls** — never as
 When this skill is used to materialize a snapshot of a user's *current* top tracks (as in `experiments/gemini-agent-test/agent_test.py`), name the playlist deterministically as:
 
 ```
-Top 5 Current — YYYY-MM-DD HH:MM
+Top X Current - dd/mm/yy
 ```
 
-using the actual run's date/time (e.g. `Top 5 Current — 2026-09-18 14:32`). This keeps repeated test runs from producing ambiguous, identically-named playlists in the library. Compute this name in Python at call time (`datetime.now()`) and pass it in explicitly — don't rely on the calling LLM to format the timestamp correctly.
+where `X` is the actual number of tracks requested and the date is the run's actual date, no time component (e.g. `Top 10 Current - 18/09/26`). This keeps repeated test runs from producing ambiguous, identically-named playlists in the library. Compute this name in Python at call time (`datetime.now().strftime('%d/%m/%y')`, with the track count as a variable driving both the name and the request) and pass it in explicitly — don't rely on the calling LLM to format the date correctly.
 
 This convention is specific to repeated top-tracks snapshots. A future caller (e.g. the clustering pipeline naming a playlist after a detected cluster like "companion" or "spiral") would use its own naming scheme, not this one — `create_playlist` itself stays generic and takes whatever `name` its caller decides on.
 
