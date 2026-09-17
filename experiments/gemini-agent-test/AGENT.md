@@ -1,5 +1,9 @@
 # Gemini Spotify Agent (`agent_test.py`)
 
+## Project Context
+
+This experiment lives inside the "Untitled Vinyl Player" capstone, whose core purpose is context-based clustering of Spotify listening history — grouping tracks by detected patterns like time-of-day, repeat behavior, and session context into categories such as "companion," "spiral," or "trigger." This Gemini agent does **not** currently have access to or awareness of that clustering/session-detection logic — it only operates on the two narrow functions described below (`get_top_tracks`, `create_playlist`). It's a standalone proof-of-concept for the function-calling pattern itself, not an integrated part of the pipeline.
+
 ## What this is
 
 A test of whether Gemini can act as an **agent** — given a natural-language goal, it decides on its own which of two available functions to call and in what order, rather than following a hard-coded call sequence. Gemini never executes anything itself: it only decides and requests; `agent_test.py` executes the real Python function locally and reports the result back. This is a standalone assessment of whether an LLM-orchestrated function-calling pattern is viable, not a component of the capstone's core clustering pipeline.
