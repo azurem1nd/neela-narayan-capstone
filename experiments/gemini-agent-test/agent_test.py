@@ -21,7 +21,7 @@ def get_spotify_client():
     return spotipy.Spotify(auth_manager=auth_manager)
 
 
-def get_top_tracks(limit: int = 5) -> list[dict]:
+def get_top_tracks(limit: int = 20) -> list[dict]:
     """Return the user's top tracks on Spotify, most-listened first.
 
     Args:
@@ -104,8 +104,9 @@ def run_agent(prompt: str):
 
 
 if __name__ == "__main__":
-    playlist_name = f"Top 5 Current — {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+    track_count = 20
+    playlist_name = f"Top {track_count} Current - {datetime.now().strftime('%d/%m/%y')}"
     run_agent(
-        "Get my top 5 tracks on Spotify, then create a new private playlist "
+        f"Get my top {track_count} tracks on Spotify, then create a new private playlist "
         f"named exactly '{playlist_name}' containing those tracks."
     )
