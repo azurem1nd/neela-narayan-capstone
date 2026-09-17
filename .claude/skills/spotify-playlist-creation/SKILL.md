@@ -1,0 +1,51 @@
+---
+name: spotify-playlist-creation
+description: Create a real Spotify playlist (create + add tracks) from a list of track IDs and a playlist name. Use whenever a set of tracks needs to be materialized as a playable Spotify playlist, regardless of caller (an LLM agent, a manual script, a future clustering pipeline).
+---
+
+# Spotify Playlist Creation
+
+## Purpose
+Create a Spotify playlist from a given list of track IDs and a playlist name — including actually adding the tracks to it. Use this whenever a set of tracks (e.g. a Gemini/LLM agent's tool call, a manual script, or a future clustering-generated cluster of songs) needs to become a real, playable Spotify playlist. This is a standalone job, independent of who or what is invoking it.
+
+## Prerequisites
+- An existing spotipy OAuth setup (`SpotifyOAuth` + a `CacheFileHandler` pointed at an absolute cache path).
+- Required scope: `playlist-modify-private` (use `playlist-modify-public` instead if the playlist should be public — the scope must match the `public` flag passed when creating the playlist).
+- If the app was previously authorized with a narrower scope, expanding it requires a fresh consent — see Pitfall 3.
+
+## Procedure
+Creating a playlist and populating it is **two separate API calls** — never assume one call does both:
+
+1. **Create the playlist:**
+   ```python
+   playlist = sp.current_user_playlist_create(name, public=False)
+   ```
+   Use `current_user_playlist_create` (posts to `/me/playlists`). Do **not** use `user_playlist_create` (posts to the legacy `/users/{user_id}/playlists`) — see Pitfall 1.
+
+2. **Add the tracks:**
+   ```python
+   sp.playlist_add_items(playlist["id"], track_ids)
+   ```
+   `track_ids` is a list of bare Spotify track ID strings (not full `spotify:track:...` URIs).
+
+## Known Pitfalls
+
+**1. `user_playlist_create` (legacy `POST /users/{user_id}/playlists`) returns a bare, undocumented 403 — even when everything else is correct.**
+Verified root cause (confirmed by direct testing, superseding an earlier, disproven theory that blamed OAuth scope): this happens even with the correct scope genuinely granted, the app owner's account listed under the Spotify Developer Dashboard's Users and Access, the app in Development Mode, and a Premium account. It was confirmed by calling `POST /v1/me/playlists` directly with the identical access token via raw `requests` and seeing it succeed (`201`), while the identical token against `POST /v1/users/{user_id}/playlists` returns the bare 403.
+- **Fix:** always use `sp.current_user_playlist_create(name, public=...)`.
+- **Related spotipy quirk worth knowing:** its cache file's `scope` field is not trustworthy for debugging scope issues. In `spotipy/oauth2.py`, `_add_custom_values_to_token_info()` overwrites the real token response's `scope` with whatever was *requested* (`token_info["scope"] = self.scope`) before caching it. To check the real granted scope, call Spotify's token endpoint directly with `requests`, bypassing spotipy.
+
+**2. LLM function-calling (e.g. Gemini) passes numeric arguments as float, not int.**
+Function-calling protocols typically have only one numeric type, so an integer-typed argument can arrive as `5.0` instead of `5`. Spotify's API rejects a float where it expects an int (400 error).
+- **Fix:** cast defensively inside the function itself (e.g. `limit = int(limit)`) — never trust the caller to send the correct Python type.
+
+**3. Expanding OAuth scope needs a forced, visible consent screen.**
+If a cache/token file already exists from a prior, narrower-scope authorization, just changing the `scope=` string in code doesn't reliably guarantee the user is shown a new consent screen.
+- **Fix:** when expanding scope, use a fresh/separate cache path and pass `show_dialog=True` to `SpotifyOAuth`, forcing a visible consent screen every time. Confirm the user actually saw and approved a screen listing the requested permissions before trusting the resulting token.
+
+## Verification Checklist
+- [ ] Playlist ID captured from step 1's return value before calling step 2
+- [ ] Track IDs are bare Spotify track ID strings, not full URIs
+- [ ] `public=` flag matches the scope actually granted (`playlist-modify-private` ↔ `public=False`, `playlist-modify-public` ↔ `public=True`)
+- [ ] Confirmed via the Spotify app/web that the playlist actually exists with the correct tracks — not just that the API call returned success
+- [ ] If scope was just expanded, confirm a real consent screen was shown and approved, not silently skipped

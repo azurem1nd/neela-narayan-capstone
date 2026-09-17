@@ -14,7 +14,7 @@ This is isolated from the main "Untitled Vinyl Player" pipeline (context-based c
 - Uses GEMINI_API_KEY from .env for function-calling via google-generativeai
 
 ## Outcome
-Worked end-to-end: Gemini correctly reasoned through the two-step task, called `get_top_tracks` then `create_playlist` in the right order via manual function-calling (no auto-execution), and a real private playlist was created on Spotify from the results.
+**Success, confirmed in production**: Gemini correctly reasoned through the two-step task, called `get_top_tracks` then `create_playlist` in the right order via manual function-calling (no auto-execution), and the resulting private playlist was verified to actually exist in the real Spotify account with the correct top-5 tracks — not just a clean local run.
 
 Issues hit and fixed along the way:
 - `gemini-2.0-flash` has been retired; API error pointed directly to its replacement, `gemini-3.6-flash`.
