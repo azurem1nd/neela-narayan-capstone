@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -103,7 +104,8 @@ def run_agent(prompt: str):
 
 
 if __name__ == "__main__":
+    playlist_name = f"Top 5 Current — {datetime.now().strftime('%Y-%m-%d %H:%M')}"
     run_agent(
         "Get my top 5 tracks on Spotify, then create a new private playlist "
-        "called 'Gemini Agent Test' containing those tracks."
+        f"named exactly '{playlist_name}' containing those tracks."
     )

@@ -28,6 +28,20 @@ Creating a playlist and populating it is **two separate API calls** — never as
    ```
    `track_ids` is a list of bare Spotify track ID strings (not full `spotify:track:...` URIs).
 
+## Naming Convention (for repeated top-tracks test runs)
+
+When this skill is used to materialize a snapshot of a user's *current* top tracks (as in `experiments/gemini-agent-test/agent_test.py`), name the playlist deterministically as:
+
+```
+Top 5 Current — YYYY-MM-DD HH:MM
+```
+
+using the actual run's date/time (e.g. `Top 5 Current — 2026-09-18 14:32`). This keeps repeated test runs from producing ambiguous, identically-named playlists in the library. Compute this name in Python at call time (`datetime.now()`) and pass it in explicitly — don't rely on the calling LLM to format the timestamp correctly.
+
+This convention is specific to repeated top-tracks snapshots. A future caller (e.g. the clustering pipeline naming a playlist after a detected cluster like "companion" or "spiral") would use its own naming scheme, not this one — `create_playlist` itself stays generic and takes whatever `name` its caller decides on.
+
+**What "Current" means:** the top tracks feeding this playlist come from `current_user_top_tracks`, which defaults to `time_range="medium_term"` — Spotify's own definition of this is "approximately last 6 months," not a real-time notion of "current." (Spotify's other options: `short_term` is "approximately last 4 weeks," `long_term` is "calculated from ~1 year of data and including all new data as it becomes available.") If the intent is a genuinely recent snapshot rather than a 6-month trend, request `time_range="short_term"` explicitly instead of relying on the default.
+
 ## Known Pitfalls
 
 **1. `user_playlist_create` (legacy `POST /users/{user_id}/playlists`) returns a bare, undocumented 403 — even when everything else is correct.**
