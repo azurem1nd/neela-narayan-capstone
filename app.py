@@ -112,6 +112,7 @@ def login():
 def callback():
     auth_manager = get_spotify_oauth()
     auth_manager.get_access_token(request.args["code"])
+    session.permanent = True
     return redirect(url_for("analyze"))
 
 
