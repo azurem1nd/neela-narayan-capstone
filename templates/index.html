@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+<head><title>Untitled Vinyl Player</title></head>
+<body>
+  <h1>Untitled Vinyl Player</h1>
+
+  {% if logged_in %}
+    <p>Connected as {{ display_name }}.</p>
+    <a href="{{ url_for('analyze') }}">Analyze my listening</a>
+  {% else %}
+    <p>Finds the listening contexts hidden in your Spotify history.</p>
+    <a href="{{ url_for('login') }}">Connect Spotify</a>
+  {% endif %}
+</body>
+</html>

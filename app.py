@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, redirect, request, session, url_for
+from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 from flask_session import Session
 import spotipy
 from spotipy.cache_handler import FlaskSessionCacheHandler
@@ -96,11 +96,12 @@ def classify_recent_plays(plays: list[dict]) -> tuple[list[dict], list[dict]]:
 
 @app.route("/")
 def index():
-    return jsonify({
-        "status": "ok",
-        "logged_in": get_spotify_client() is not None,
-        "login_url": url_for("login"),
-    })
+    sp = get_spotify_client()
+    if sp is None:
+        return render_template("index.html", logged_in=False)
+
+    me = sp.current_user()
+    return render_template("index.html", logged_in=True, display_name=me.get("display_name") or me["id"])
 
 
 @app.route("/login")
@@ -120,7 +121,7 @@ def callback():
     auth_manager = get_spotify_oauth()
     auth_manager.get_access_token(code)
     session.permanent = True
-    return redirect(url_for("analyze"))
+    return redirect(url_for("index"))
 
 
 @app.route("/analyze")
