@@ -1,9 +1,9 @@
-"""Multi-user hosted web app: connect Spotify, discover memory categories in
-your own recent listening, create a playlist from one of them.
+"""Multi-user hosted web app: connect Spotify, discover listening contexts
+in your own recent history, create a playlist from one of them.
 
-Reuses session_detection.py and track_features.py's classification logic
-unchanged -- this file only adds the live-data path (Spotify API instead
-of listening_history.db) and the web/session layer around it.
+Reuses session_detection.py, track_features.py, and context_detection.py's
+methodology unchanged -- this file only adds the live-data path (Spotify
+API instead of listening_history.db) and the web/session layer around it.
 """
 
 import os
@@ -16,8 +16,7 @@ import spotipy
 from spotipy.cache_handler import FlaskSessionCacheHandler
 from spotipy.oauth2 import SpotifyOAuth
 
-from session_detection import detect_sessions
-from track_features import classify_track, extract_track_features
+from context_detection import build_contexts
 from spotify_playlist import create_playlist
 
 REPO_DIR = Path(__file__).resolve().parent
@@ -67,33 +66,6 @@ def fetch_recent_plays(sp) -> list[dict]:
     return plays
 
 
-def classify_recent_plays(plays: list[dict]) -> tuple[list[dict], list[dict]]:
-    """Group live plays by track and session, classify each track. No DB involved."""
-    by_track: dict[str, list[dict]] = {}
-    for p in plays:
-        if p["track_id"] is None:
-            continue
-        by_track.setdefault(p["track_id"], []).append(p)
-
-    classified = []
-    for track_id, track_plays in by_track.items():
-        features = extract_track_features(track_plays)
-        features["track_id"] = track_id
-        features["track_name"] = track_plays[0]["track_name"]
-        features["artist_name"] = track_plays[0]["artist_name"]
-        features["classification"] = classify_track(features)
-        classified.append(features)
-
-    session_tuples = [
-        (p["played_at"], p["track_id"], p["artist_name"])
-        for p in plays
-        if p["track_id"] is not None
-    ]
-    sessions = detect_sessions(session_tuples)
-
-    return classified, sessions
-
-
 @app.route("/")
 def index():
     sp = get_spotify_client()
@@ -128,43 +100,41 @@ def callback():
 def analyze():
     sp = get_spotify_client()
     if sp is None:
-        return jsonify({"error": "not authenticated", "login_url": url_for("login")}), 401
+        return redirect(url_for("index"))
 
     me = sp.current_user()
     plays = fetch_recent_plays(sp)
-    classified, sessions = classify_recent_plays(plays)
+    contexts = build_contexts(plays)
 
-    by_category: dict[str, list[dict]] = {}
-    for f in classified:
-        by_category.setdefault(f["classification"], []).append(f)
-
-    return jsonify({
-        "connected_as": {"id": me["id"], "display_name": me.get("display_name")},
-        "play_count": len(plays),
-        "session_count": len(sessions),
-        "categories": by_category,
-    })
+    return render_template(
+        "contexts.html",
+        display_name=me.get("display_name") or me["id"],
+        contexts=contexts,
+    )
 
 
 @app.route("/create-playlist", methods=["POST"])
 def create_playlist_route():
     sp = get_spotify_client()
     if sp is None:
-        return jsonify({"error": "not authenticated", "login_url": url_for("login")}), 401
+        return redirect(url_for("index"))
 
-    category = (request.get_json(silent=True) or {}).get("category") or request.args.get("category")
-    if not category:
-        return jsonify({"error": "missing 'category'"}), 400
+    context_id = request.form.get("context_id", type=int)
+    if context_id is None:
+        return jsonify({"error": "missing 'context_id'"}), 400
 
     plays = fetch_recent_plays(sp)
-    classified, _ = classify_recent_plays(plays)
+    contexts = build_contexts(plays)
 
-    track_ids = [f["track_id"] for f in classified if f["classification"] == category]
-    if not track_ids:
-        return jsonify({"error": f"no tracks currently classified as '{category}'"}), 404
+    match = next((c for c in contexts if c["context_id"] == context_id), None)
+    if match is None:
+        return jsonify({
+            "error": "context not found -- your listening data may have "
+                      "changed since you viewed it, try again"
+        }), 404
 
-    result = create_playlist(sp, track_ids, f"{category} — from your recent listening")
-    return jsonify(result)
+    result = create_playlist(sp, match["track_ids"], f"{match['label']} — from your recent listening")
+    return render_template("playlist_created.html", result=result)
 
 
 if __name__ == "__main__":

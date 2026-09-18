@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head><title>Untitled Vinyl Player</title></head>
+<body>
+  <h1>Untitled Vinyl Player</h1>
+  <p>Connected as {{ display_name }}. Your listening contexts:</p>
+
+  {% for context in contexts %}
+    <div>
+      <h2>{{ context.label }}</h2>
+      <p>{{ context.description }}</p>
+      <p>{{ context.track_count }} tracks</p>
+      <form method="post" action="{{ url_for('create_playlist_route') }}">
+        <input type="hidden" name="context_id" value="{{ context.context_id }}">
+        <button type="submit">Create Spotify playlist</button>
+      </form>
+    </div>
+  {% endfor %}
+</body>
+</html>

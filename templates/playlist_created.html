@@ -1,0 +1,10 @@
+<!doctype html>
+<html>
+<head><title>Playlist Created</title></head>
+<body>
+  <h1>Playlist Created</h1>
+  <p>"{{ result.name }}" — {{ result.track_count }} tracks.</p>
+  <p><a href="{{ result.playlist_url }}">Open on Spotify</a></p>
+  <p><a href="{{ url_for('analyze') }}">Back to your contexts</a></p>
+</body>
+</html>
