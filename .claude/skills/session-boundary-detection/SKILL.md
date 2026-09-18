@@ -10,7 +10,7 @@ Given the chronological list of `(played_at, track_id)` plays in `listening_hist
 
 ## Prerequisites
 - Python stdlib only (`sqlite3`, `datetime`, `pathlib`) — no external dependencies.
-- Input data: the `plays` table in `listening_history.db` (see `pull_history.py` for its schema) — specifically `played_at` (ISO-8601 string, primary key) and `track_id`.
+- Input data: the `plays` table in `listening_history.db` (see `pull_history.py` for its schema) — specifically `played_at` (ISO-8601 string, primary key), `track_id`, and `artist_name` (required for `distinct_artist_count`; confirmed present and `NOT NULL` on every row as of this writing).
 - **Canonical implementation lives in `session_detection.py` at the repo root** (alongside `pull_history.py`, since both operate on the same DB). Import `detect_sessions`/`load_plays` from there — the code shown below is a direct copy for reference, not a second source of truth. If the two ever diverge, `session_detection.py` is correct.
 
 ## Procedure
@@ -20,7 +20,7 @@ Given the chronological list of `(played_at, track_id)` plays in `listening_hist
    def load_plays(db_path):
        conn = sqlite3.connect(db_path)
        rows = conn.execute(
-           "SELECT played_at, track_id FROM plays ORDER BY played_at ASC"
+           "SELECT played_at, track_id, artist_name FROM plays ORDER BY played_at ASC"
        ).fetchall()
        conn.close()
        return rows
@@ -35,7 +35,10 @@ Given the chronological list of `(played_at, track_id)` plays in `listening_hist
    def _parse(played_at: str) -> datetime:
        return datetime.fromisoformat(played_at.replace("Z", "+00:00"))
 
-   def detect_sessions(plays: list[tuple[str, str]], gap_minutes: float = GAP_MINUTES) -> list[dict]:
+   def _split_artists(artist_name: str) -> list[str]:
+       return [a.strip() for a in artist_name.split(",") if a.strip()]
+
+   def detect_sessions(plays: list[tuple[str, str, str]], gap_minutes: float = GAP_MINUTES) -> list[dict]:
        if not plays:
            return []
 
@@ -55,13 +58,19 @@ Given the chronological list of `(played_at, track_id)` plays in `listening_hist
            start = group[0][0]
            end = group[-1][0]
            duration_minutes = (_parse(end) - _parse(start)).total_seconds() / 60
+
+           artist_set = set()
+           for _, _, artist_name in group:
+               artist_set.update(_split_artists(artist_name))
+
            sessions.append({
                "session_id": i,
                "start": start,
                "end": end,
                "duration_minutes": duration_minutes,
-               "track_ids": [track_id for _, track_id in group],
+               "track_ids": [track_id for _, track_id, _ in group],
                "track_count": len(group),
+               "distinct_artist_count": len(artist_set),
            })
        return sessions
    ```
@@ -75,6 +84,7 @@ Given the chronological list of `(played_at, track_id)` plays in `listening_hist
        "duration_minutes": 26.8,
        "track_ids": ["1OWBh1eVxUdA1Z6UA8r4nh", "22NHkFYbgxB2Zirj29Gbp8"],
        "track_count": 2,
+       "distinct_artist_count": 1,
    }
    ```
 
@@ -92,6 +102,8 @@ Given the chronological list of `(played_at, track_id)` plays in `listening_hist
 
 **6. Session duration is a simple timestamp diff (last play's `played_at` minus first play's `played_at`), not adjusted for track length.** A single-track session therefore always has `duration_minutes == 0` — this is intentional, not a bug, per the stated design (duration measures the span between recorded play *events*, not actual listening time).
 
+**7. `artist_name` can be comma-joined for collaborations** (e.g. `pull_history.py` stores `"Steve Lacy, SZA"` for a feature — confirmed in real data, 12 of 126 rows as of this writing). `distinct_artist_count` splits on `,` and counts unique *individual* artists across the session, not unique `artist_name` strings — a session containing both `"Steve Lacy"` (solo) and `"Steve Lacy, SZA"` (collab) correctly counts as 2 distinct artists (Steve Lacy, SZA), not 2 unrelated artist-strings. This relies on `pull_history.py`'s existing `", ".join(...)` convention for multi-artist tracks; if that convention ever changes, `_split_artists` needs to change with it.
+
 ## Verification Checklist
 - [ ] A single-play input returns exactly one session with `track_count == 1` and `duration_minutes == 0`
 - [ ] Two plays exactly 30:00 apart land in the **same** session (boundary is strict `>`, not `>=`)
@@ -101,3 +113,4 @@ Given the chronological list of `(played_at, track_id)` plays in `listening_hist
 - [ ] `duration_minutes` for a multi-play session matches a hand-computed `(end - start)` for at least one real example from `listening_history.db`
 - [ ] An empty plays list returns `[]` with no exception
 - [ ] Running against the real `listening_history.db` produces a session count that's sane relative to the total play count (i.e. sessions ≤ plays, and roughly matches what you'd expect from eyeballing timestamp gaps in the data)
+- [ ] A session containing a solo track and a collab track by an overlapping artist (e.g. `"Steve Lacy"` and `"Steve Lacy, SZA"`) counts the overlapping artist once, not twice
