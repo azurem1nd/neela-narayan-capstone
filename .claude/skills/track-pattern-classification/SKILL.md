@@ -1,15 +1,17 @@
 ---
 name: track-pattern-classification
-description: Classify individual tracks into listening-pattern categories (Companion/Trigger/Spiral/Ghost-Return) based on per-track features extracted from listening_history.db. Feature extraction is built and tested; classification thresholds are still pending discussion.
+description: Classify individual tracks into listening-pattern categories (Companion/Trigger/Spiral implemented; Ghost/Return not yet implemented) based on per-track features extracted from listening_history.db.
 ---
 
 # Track Pattern Classification
 
 ## Purpose
-Classify individual tracks by their listening *pattern* — not genre, not one-off popularity, but the shape of how a track gets replayed over time (steady companion, sudden burst, escalating obsession, dormant-then-reactivated). This is built in two stages:
+Classify individual tracks by their listening *pattern* — not genre, not one-off popularity, but the shape of how a track gets replayed over time (steady companion, sudden burst, escalating repeat, dormant-then-reactivated). Built in two stages:
 
 1. **Feature extraction** (done, tested) — turn a track's raw play history into a small set of numeric/structural features.
-2. **Classification** (not yet built) — map those features onto named categories: **Companion**, **Trigger**, **Spiral**, **Ghost-Return**. This stage is intentionally left as a placeholder below until thresholds are agreed on using real feature distributions.
+2. **Classification** (Trigger/Companion/Spiral done; Ghost/Return not yet implemented) — map those features onto named categories using thresholds chosen against real feature distributions pulled from `listening_history.db`, not guessed in the abstract.
+
+**Epistemic scope, important:** these labels describe a measurable behavioral *shape* in play timestamps — same-day concentration, cross-day return, burst density. They are **not** a claim about a verified psychological trigger, life event, or place. The data can establish *that* a pattern occurred, never *why*. Treat every label below as "candidate," not "proven cause."
 
 ## Prerequisites
 - Python stdlib only (`sqlite3`, `math`, `collections.Counter`, `datetime`, `pathlib`) — no external dependencies.
@@ -129,16 +131,68 @@ Classify individual tracks by their listening *pattern* — not genre, not one-o
    }
    ```
 
-### Step 2: Classification — ⚠️ PLACEHOLDER, NOT YET IMPLEMENTED
+### Step 2: Classification
 
-**This section is intentionally empty pending a threshold discussion using real feature distributions already pulled from `listening_history.db`.** Target categories, decided but not yet operationalized:
+Thresholds below were chosen by sorting real per-track features from the live dataset and looking for natural breakpoints, not picked in the abstract. See Known Limitations for what's provisional vs. solid.
 
-- **Companion** — steady, repeated listening over an extended span (candidate signal: moderate-to-high `play_count`, `active_days` spanning multiple days, low-to-moderate `time_of_day_circular_variance`)
-- **Trigger** — a short, sudden burst of plays, then nothing (candidate signal: high `density_plays_per_day_busiest_window` relative to `play_count`, very small `gap_hours` values, low `active_days`)
-- **Spiral** — escalating, obsessive repeat within a bounded window (candidate signal: shrinking `gap_hours` over time, high density, but distinct from Trigger by some escalation shape rather than a flat burst)
-- **Ghost-Return** — dormant for a long stretch, then reactivated (candidate signal: a `gap_hours` value that's an outlier much larger than the others in the same track's sequence)
+```python
+def classify_track(features: dict) -> str:
+    """
+    Classify a track's listening pattern from its features.
 
-None of the above thresholds are finalized — this is a placeholder recording intent, not logic to trust or implement against yet. Do not build classification code from this section without an explicit follow-up discussion.
+    Returns one of: "Spiral", "Trigger", "Companion", "insufficient_data".
+
+    IMPORTANT: these labels describe a measurable behavioral SHAPE in the
+    play timestamps (same-day concentration, cross-day return, burst
+    density) -- they are not a claim about a verified psychological
+    trigger, life event, or place. The data can establish THAT a pattern
+    occurred, never WHY.
+
+    Thresholds (Spiral is provisional, Ghost/Return are not implemented --
+    see Known Limitations):
+      - insufficient_data: play_count < 2 (no repeat to measure a pattern from)
+      - Spiral (PROVISIONAL): density_plays_per_day_busiest_window >= 3
+      - Trigger: play_count >= 2 and active_days < 0.5 (all plays same day, never returned)
+      - Companion: play_count >= 2 and active_days >= 0.5 (returned on a later day)
+
+    Spiral is checked before Trigger/Companion since it's the more specific
+    signal. A track can in principle satisfy both Spiral's density
+    condition and Trigger's same-day condition at once (true for the one
+    current real example, "One Of Your Girls") -- in that case Spiral
+    takes precedence.
+    """
+    if features["play_count"] < 2:
+        return "insufficient_data"
+
+    if features["density_plays_per_day_busiest_window"] >= 3:
+        return "Spiral"
+
+    if features["active_days"] < 0.5:
+        return "Trigger"
+
+    return "Companion"
+
+
+def classify_all_tracks(db_path=DB_PATH) -> list[dict]:
+    """Extract features for every track and attach a classification label to each."""
+    features = extract_all_track_features(db_path)
+    for f in features:
+        f["classification"] = classify_track(f)
+    return features
+```
+
+**Why these thresholds, specifically:**
+- **Trigger vs. Companion boundary (`active_days` at 0.5)** sits inside a real *empty gap* in the data — the actual sorted `active_days` values for multi-play tracks jump straight from `0.03` to `0.95` with nothing in between, so any threshold placed in that gap is equally defensible. `0.5` was picked as a clean, explainable round number, not because it's more "correct" than `0.4` or `0.6`.
+- **Trigger requires only `play_count >= 2`**, not a higher bar. A same-day replay with no later return (e.g. "bebe," "Static": played, then replayed once 37 minutes later, never again) is already a meaningful signal on its own, even without a third play.
+- **Companion requires only `play_count >= 2`**, same reasoning — a single overnight return (e.g. many tracks at `active_days ≈ 0.95`, one repeat ~23h later at nearly the same time of day) already shows a real signal via `time_of_day_circular_variance ≈ 0.01` (extremely consistent), even this early.
+
+### Ghost / Return — NOT IMPLEMENTED (known limitation, not a bug)
+
+Proposed logic, recorded here so it isn't re-derived from scratch later, but **deliberately left uncoded**:
+- **Ghost**: a track that was Companion-shaped (established repeat pattern), then went **7+ days silent**.
+- **Return**: 2+ renewed plays after that silent gap — i.e. a Ghost track reactivating.
+
+**Why unimplemented:** the current dataset's longest observed gap between two plays of the same track is only **~40.64 hours** (~1.7 days). There is no real example anywhere near a 7-day silence to validate a dormancy threshold against — any number picked now would be pure guesswork with zero real data behind it, unlike Trigger/Companion/Spiral above. Revisit once multi-week data has accumulated (the cron pipeline is already collecting continuously) and a real long-gap example actually exists to test against.
 
 ## Known Edge Cases
 
@@ -146,9 +200,15 @@ None of the above thresholds are finalized — this is a placeholder recording i
 
 **2. `density_plays_per_day_busiest_window` buckets by calendar date (UTC), not a rolling 24h window.** A burst of plays spanning midnight (e.g. 11pm-1am) would be split across two calendar-day buckets and undercount the true burst size. Not yet exercised by real data (no track's plays currently straddle midnight), but worth revisiting once real Trigger/Spiral candidates are being evaluated near a day boundary.
 
-**3. Tracks with `play_count == 1` trivially zero out every variance/gap feature** (`active_days: 0`, `time_of_day_circular_variance: 0.0`, `gap_hours: []`). This is correct, not a bug — a single play has no pattern to measure yet. As of this writing, 57 of 70 tracks fall into this bucket, meaning most tracks currently have no classifiable pattern at all; classification will need an explicit "insufficient data" outcome distinct from the four named categories.
+**3. Tracks with `play_count == 1` trivially zero out every variance/gap feature** (`active_days: 0`, `time_of_day_circular_variance: 0.0`, `gap_hours: []`). This is correct, not a bug — a single play has no pattern to measure yet. As of this writing, 53 of 83 tracks fall into this bucket, meaning most tracks currently have no classifiable pattern at all; these classify as `insufficient_data`, distinct from the three implemented named categories.
 
 **4. Rows with `track_id IS NULL` are excluded from `load_track_plays`.** Not currently an issue (0 NULLs as of this writing), but per-track grouping is impossible without an ID, so this exclusion is permanent, not a temporary gap.
+
+**5. Spiral is provisional — validated by exactly one real track.** Only "One Of Your Girls" (3 plays in ~6 minutes, `density=3`) has ever hit the `density_plays_per_day_busiest_window >= 3` threshold. One example is not enough to be confident the boundary is in the right place (unlike Trigger/Companion's `active_days` boundary, which sits in a real empty gap in the data) — revisit this threshold once more burst-pattern tracks accumulate.
+
+**6. Companion currently spans two very different maturity levels without distinguishing them.** 19 of the 27 current Companion tracks have only *one* overnight repeat (`active_days ≈ 0.95-0.96`); the other 7 (the Steve Lacy set) are well-established with `play_count` up to 6 and `active_days` up to 3.76. Both sit under the same "Companion" label today. This is a known limitation, not something to fix right now — a future "strength" or "confidence" score could distinguish early-forming vs. established Companions without needing a new category.
+
+**7. Ghost/Return are unimplemented — see the "Ghost / Return" subsection above** for the proposed logic and why it's deliberately left uncoded (no real example of a 7+ day gap exists yet to validate against).
 
 ## Verification Checklist
 
@@ -160,6 +220,13 @@ None of the above thresholds are finalized — this is a placeholder recording i
 - [ ] Circular variance synthetic check: a consistent time-of-day pattern spanning midnight scores near `0.0`, not a large naive-variance value
 - [ ] Running against the real `listening_history.db` produces one feature dict per distinct non-NULL `track_id`, count matching `SELECT COUNT(DISTINCT track_id) FROM plays WHERE track_id IS NOT NULL`
 
-**Classification (deferred — cannot verify yet):**
-- [ ] TBD once thresholds are agreed on: each of the four categories should be reachable by at least one real track in the current dataset (no category should be theoretically defined but practically empty)
-- [ ] TBD: tracks with insufficient data (`play_count == 1`) are explicitly excluded or labeled as such, never force-fit into one of the four categories
+**Classification (Trigger/Companion/Spiral — can verify now):**
+- [ ] Every track with `play_count == 1` classifies as `insufficient_data`, never force-fit into a named category
+- [ ] A track with `play_count >= 2`, `active_days < 0.5`, `density < 3` classifies as `Trigger`
+- [ ] A track with `play_count >= 2`, `active_days >= 0.5`, `density < 3` classifies as `Companion`
+- [ ] A track with `density_plays_per_day_busiest_window >= 3` classifies as `Spiral`, even if it would otherwise also match Trigger (precedence check, real example: "One Of Your Girls")
+- [ ] Total classified counts sum to the total track count (`Spiral + Trigger + Companion + insufficient_data == len(features)`), confirming no track is double-counted or dropped
+- [ ] Each of Trigger/Companion/Spiral is reachable by at least one real track in the current dataset (confirmed as of this writing: 2 Trigger, 27 Companion, 1 Spiral, 53 insufficient_data)
+
+**Classification (Ghost/Return — cannot verify, not implemented):**
+- [ ] N/A until multi-week data exists with a real 7+ day gap to test against

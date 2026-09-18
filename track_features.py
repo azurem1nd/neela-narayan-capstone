@@ -113,11 +113,56 @@ def extract_all_track_features(db_path: Path = DB_PATH) -> list[dict]:
     return results
 
 
+def classify_track(features: dict) -> str:
+    """
+    Classify a track's listening pattern from its features.
+
+    Returns one of: "Spiral", "Trigger", "Companion", "insufficient_data".
+
+    IMPORTANT: these labels describe a measurable behavioral SHAPE in the
+    play timestamps (same-day concentration, cross-day return, burst
+    density) -- they are not a claim about a verified psychological
+    trigger, life event, or place. The data can establish THAT a pattern
+    occurred, never WHY.
+
+    Thresholds (see SKILL.md for full rationale; Spiral is provisional,
+    Ghost/Return are not implemented -- see SKILL.md Known Limitations):
+      - insufficient_data: play_count < 2 (no repeat to measure a pattern from)
+      - Spiral (PROVISIONAL): density_plays_per_day_busiest_window >= 3
+      - Trigger: play_count >= 2 and active_days < 0.5 (all plays same day, never returned)
+      - Companion: play_count >= 2 and active_days >= 0.5 (returned on a later day)
+
+    Spiral is checked before Trigger/Companion since it's the more specific
+    signal. A track can in principle satisfy both Spiral's density
+    condition and Trigger's same-day condition at once (true for the one
+    current real example, "One Of Your Girls") -- in that case Spiral
+    takes precedence.
+    """
+    if features["play_count"] < 2:
+        return "insufficient_data"
+
+    if features["density_plays_per_day_busiest_window"] >= 3:
+        return "Spiral"
+
+    if features["active_days"] < 0.5:
+        return "Trigger"
+
+    return "Companion"
+
+
+def classify_all_tracks(db_path: Path = DB_PATH) -> list[dict]:
+    """Extract features for every track and attach a classification label to each."""
+    features = extract_all_track_features(db_path)
+    for f in features:
+        f["classification"] = classify_track(f)
+    return features
+
+
 if __name__ == "__main__":
-    all_features = extract_all_track_features()
+    all_features = classify_all_tracks()
     print(f"{len(all_features)} unique tracks\n")
     for f in all_features:
-        print(f"{f['track_name']} — {f['artist_name']}")
+        print(f"{f['track_name']} — {f['artist_name']}  [{f['classification']}]")
         print(f"  play_count: {f['play_count']}")
         print(f"  active_days: {f['active_days']}  (first {f['first_played']} -> last {f['last_played']})")
         print(f"  time_of_day_circular_variance: {f['time_of_day_circular_variance']}")
