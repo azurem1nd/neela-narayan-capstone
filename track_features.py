@@ -1,7 +1,9 @@
-"""Per-track feature extraction from Spotify listening history.
+"""Per-track feature extraction and memory-category classification for
+Spotify listening history.
 
-Step 1 of track-pattern-classification: extraction only, no category
-thresholds or classification logic yet.
+See .claude/skills/track-feature-extraction/SKILL.md for the extraction
+methodology and .claude/skills/memory-category-thresholds/SKILL.md for
+the classification methodology and threshold rationale.
 """
 
 import math
