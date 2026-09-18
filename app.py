@@ -110,8 +110,15 @@ def login():
 
 @app.route("/callback")
 def callback():
+    if "error" in request.args:
+        return jsonify({"error": request.args["error"]}), 400
+
+    code = request.args.get("code")
+    if not code:
+        return jsonify({"error": "missing 'code' in callback"}), 400
+
     auth_manager = get_spotify_oauth()
-    auth_manager.get_access_token(request.args["code"])
+    auth_manager.get_access_token(code)
     session.permanent = True
     return redirect(url_for("analyze"))
 
