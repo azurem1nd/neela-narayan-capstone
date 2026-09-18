@@ -3,13 +3,21 @@
 Joins session_detection.py's session boundaries with track_features.py's
 per-track classification, so a session can inherit a context label from
 its qualifying member tracks (plurality vote) instead of requiring every
-individual track to independently qualify. Falls back to a session-native
-label (Glimpse/Block/Exploration) for sessions with zero classified
-tracks, or where the plurality winner doesn't meet a minimum
-representation threshold (see MIN_REPRESENTATION_RATIO) -- a single
-qualifying track should not define an entire session's context. See
-.claude/skills/context-detection/SKILL.md for the full methodology and
-known limitations.
+individual track to independently qualify.
+
+Two distinct fallback cases, kept conceptually separate:
+- Zero qualifying tracks (every distinct track is track_features.py's
+  "insufficient_data" -- fewer than 2 plays, no pattern measurable) ->
+  "Glimpse". This IS the user-facing name for insufficient_data, applied
+  at whatever size the session actually is -- not a technical state, not
+  restricted to single-track sessions.
+- Some qualifying tracks exist, but the plurality winner doesn't meet a
+  minimum representation threshold (see MIN_REPRESENTATION_RATIO) -- real
+  signal exists, just not dominant. Falls back to a session-native label
+  (Block/Exploration) based on artist diversity instead.
+
+See .claude/skills/context-detection/SKILL.md for the full methodology
+and known limitations.
 """
 
 from collections import Counter
@@ -28,10 +36,11 @@ QUALIFYING_LABELS = {"Spiral", "Trigger", "Companion"}
 MIN_REPRESENTATION_RATIO = 0.15
 
 
-def _fallback_context(session: dict, distinct_track_count: int) -> dict:
-    """Session-native label for sessions with zero track-level signal.
+def _diversity_fallback(session: dict, distinct_track_count: int) -> dict:
+    """Session-native label for sessions with some qualifying signal that
+    didn't meet MIN_REPRESENTATION_RATIO -- real pattern exists somewhere
+    in the session, just not dominant enough to name the whole session.
 
-    Glimpse: a single distinct track, no session structure to characterize.
     Block: concentrated listening, few distinct artists relative to tracks.
     Exploration: diverse listening, many distinct artists relative to tracks.
 
@@ -40,9 +49,6 @@ def _fallback_context(session: dict, distinct_track_count: int) -> dict:
     session) -- keeps this consistent with the track_count already shown
     in the context dict build_contexts() returns.
     """
-    if distinct_track_count == 1:
-        return {"label": "Glimpse", "description": "A single track, played once."}
-
     ratio = session["distinct_artist_count"] / distinct_track_count
     if ratio < 0.5:
         return {
@@ -96,17 +102,23 @@ def build_contexts(plays: list[dict]) -> list[dict]:
         labels = [classification_by_track[tid] for tid in distinct_ids]
         qualifying = [label for label in labels if label in QUALIFYING_LABELS]
 
-        label = None
-        if qualifying:
+        if not qualifying:
+            # Every distinct track is insufficient_data -- the user-facing
+            # name for that is Glimpse, at whatever size this session is.
+            label = "Glimpse"
+            description = (
+                f"{len(distinct_ids)} tracks, none played more than once in "
+                "this window — a fleeting listening encounter."
+            )
+        else:
             winner, count = Counter(qualifying).most_common(1)[0]
             if count / len(distinct_ids) >= MIN_REPRESENTATION_RATIO:
                 label = winner
                 description = f"{label} — {count} of {len(distinct_ids)} tracks show this pattern."
-
-        if label is None:
-            fallback = _fallback_context(sess, len(distinct_ids))
-            label = fallback["label"]
-            description = fallback["description"]
+            else:
+                fallback = _diversity_fallback(sess, len(distinct_ids))
+                label = fallback["label"]
+                description = fallback["description"]
 
         contexts.append({
             "context_id": sess["session_id"],
