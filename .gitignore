@@ -3,3 +3,4 @@
 .venv/
 listening_history.db
 pull.log
+__pycache__/
