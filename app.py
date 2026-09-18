@@ -121,6 +121,7 @@ def analyze():
     if sp is None:
         return jsonify({"error": "not authenticated", "login_url": url_for("login")}), 401
 
+    me = sp.current_user()
     plays = fetch_recent_plays(sp)
     classified, sessions = classify_recent_plays(plays)
 
@@ -129,6 +130,7 @@ def analyze():
         by_category.setdefault(f["classification"], []).append(f)
 
     return jsonify({
+        "connected_as": {"id": me["id"], "display_name": me.get("display_name")},
         "play_count": len(plays),
         "session_count": len(sessions),
         "categories": by_category,
