@@ -54,7 +54,11 @@ def fetch_recent_plays(sp) -> list[dict]:
     results = sp.current_user_recently_played(limit=50)
     plays = []
     for item in results["items"]:
-        track = item["track"]
+        track = item.get("track")
+        if track is None:
+            # Spotify can return a null track for e.g. local files played
+            # through a client -- skip rather than crash.
+            continue
         artist_name = ", ".join(a["name"] for a in track.get("artists", [])) or "Unknown"
         plays.append({
             "played_at": item["played_at"],
