@@ -12,7 +12,7 @@ Visual Model
 A turntable/player as the home screen. The active cluster loads onto the platter. Other clusters are browsable as physical discs on a shelf below — tap one to load it. This replaces a flat list/grid with a "crate-digging" interaction.
 
 MVP Scope (what actually gets built and demoed)
-Pull personal listening history (Spotify data export, since live API doesn't expose full history or skip data)
+Pull personal listening history via periodic polling of the working spotipy OAuth connection against Spotify's `current_user_recently_played` endpoint (hard-capped at 50 plays per call, no deep pagination), accumulating results over time into a local SQLite database with dedup on `played_at`, since the live API has no full-history export and can't page back further than the most recent 50 plays
 Detect session boundaries (e.g. gap-based: >30 min silence = new session)
 Cluster sessions using time-of-day, day-of-week, and repeat-count as features
 Auto-generate a plain-language label suggestion per cluster from its context (e.g. "mornings, ~10 min")

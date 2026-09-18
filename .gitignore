@@ -1,3 +1,7 @@
 .cache
 .env
 .venv/
+listening_history.db
+pull.log
+__pycache__/
+flask_session/
