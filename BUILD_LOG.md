@@ -52,3 +52,33 @@
   - Proposed three session-native fallback categories, deliberately distinct from Companion/Trigger/Spiral: **Glimpse** (`track_count == 1`), **Block** (`distinct_artist_count / track_count < 0.5`, concentrated/thematic listening), **Exploration** (ratio `>= 0.5`, diverse/discovery listening). Applied against the three real all-`insufficient_data` sessions as examples. Explicitly flagged as provisional — the Block/Exploration boundary is calibrated on only two real data points.
   - None of Approach 3, the plurality rule, or the Glimpse/Block/Exploration fallback has been implemented in code. Work was explicitly paused at the user's request before any implementation began.
 
+## 2026-09-18 — Part B
+(Continues from Part A; work ran past midnight into 2026-09-19.)
+- **Time spent:** ~6-7 hrs (commit span 19:06 09-18 → 02:08 09-19)
+- **Tokens used:** rough estimate only, no exact telemetry
+- **Shipped (implemented):**
+  - Built the multi-user Flask backend (`app.py`, `spotify_playlist.py`) for Railway: `/login`/`/callback` OAuth via `FlaskSessionCacheHandler` + server-side `Flask-Session` (so the token never sits in the visitor's browser), `/analyze`/`/create-playlist` as a live, stateless one-shot fetch (no DB). `Procfile`, `.env.example` added.
+  - `/analyze` now calls `sp.current_user()` and surfaces `connected_as` — the app was already scoped per-user via the token but never showed who was connected.
+  - Fixed the Railway deploy blocker: gunicorn defaults to `127.0.0.1:8000`, not reachable externally — bound to `0.0.0.0:$PORT` in the `Procfile`.
+  - Added `session.permanent = True` and a guard for denied/missing OAuth `code` in `/callback` (previously an unhandled `KeyError` → 500).
+  - Diagnosed a Railway crash: `FLASK_SECRET_KEY` is read at module level (boots-crashes if missing) vs. the lazy, function-scoped `SPOTIPY_*` reads — fixed by setting the env var.
+  - Added a minimal landing page (`templates/index.html`) and post-auth confirmation flow.
+  - Built `context_detection.py::build_contexts()` — the session↔classification join Part A had paused before implementing. Sessions inherit a label from qualifying member tracks by plurality vote, or fall back to `Glimpse`/`Block`/`Exploration`. `/analyze` renders real HTML (`contexts.html`); `/create-playlist` is now scoped to one session's `context_id` instead of pooling every same-labeled track across the whole fetch.
+  - Fixed two real bugs found via live testing: (1) a session could be labeled "Trigger" off 1 of 21-22 tracks (4.8%) with zero competition — added `MIN_REPRESENTATION_RATIO = 0.15`, chosen by testing 10/15/20/25% against real sessions (15% was the smallest value fixing both observed thin-signal cases; 20/25% gave identical results). (2) the fallback path used raw play-event counts instead of deduplicated track counts, breaking `Glimpse` on replayed-single-track sessions.
+  - Unified `Glimpse` and track-level `insufficient_data`: widened Glimpse to any session with zero qualifying tracks (not just single-track sessions) — no new threshold, reuses the existing empty/non-empty qualifying-list check.
+  - Verified the full flow end-to-end against the real account (login → contexts → playlist creation → re-fetched and confirmed the created playlist's tracks matched).
+  - Opened and merged PR #4 (`assessment-2-neela` → `main`); verified no conflicts before merge and confirmed `origin/main` afterward.
+- **Investigated:**
+  - Pre-build audit: confirmed `detect_sessions`/`classify_track` were already user-agnostic; only the auth/data-access layer was single-user.
+  - OAuth production-readiness audit and Railway deployment-readiness audit (both read-only) — only real blocker found was the gunicorn bind.
+  - Traced the multi-user ownership chain end-to-end — verdict: PASS, no hardcoded account/token/DB dependency.
+  - Full breakdown of every context name the system can produce, distinguishing implemented vs. conceptual-only (Ghost/Return still unimplemented).
+- **Decided:**
+  - Live one-shot fetch, no persistent DB for the hosted app — `listening_history.db`/cron pipeline stay local-only, separate from what's served.
+  - Gemini agent experiment stays out of scope for the hosted app.
+  - Server-side session storage over Flask's default client-side cookie session.
+  - "Context" = one detected session, not a cross-session recurring pattern — a defensible simplification of `plan.md`'s original vision given the no-persistent-DB architecture.
+  - Glimpse's boundary is categorical (zero qualifying tracks), not a calibrated percentage.
+- **Proposed, then rejected:**
+  - A percentage-based "mostly insufficient_data" threshold for Glimpse — rejected in favor of the categorical rule, since it would need real-data calibration with no evidence to justify a specific number.
+
