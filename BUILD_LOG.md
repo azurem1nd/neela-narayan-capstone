@@ -82,7 +82,7 @@
 - **Proposed, then rejected:**
   - A percentage-based "mostly insufficient_data" threshold for Glimpse — rejected in favor of the categorical rule, since it would need real-data calibration with no evidence to justify a specific number.
 
-## 2026-09-19
+## 2026-09-19 - PART A 
 - **Time spent:** ~11 hrs (real session span 02:30–13:43 IST, from local Claude Code transcript timestamps, excluding the portion already covered by Part B)
 - **Tokens used:** 437,388 output tokens (real, from the local session transcript — not an estimate)
 - **Shipped (implemented):**
