@@ -49,23 +49,40 @@ def get_spotify_client():
     return spotipy.Spotify(auth_manager=auth_manager)
 
 
-def fetch_recent_plays(sp) -> list[dict]:
-    """Fetch the current user's recently played tracks, normalized and sorted."""
-    results = sp.current_user_recently_played(limit=50)
+def fetch_recent_plays(sp, max_plays: int = 300) -> list[dict]:
+    """Fetch the current user's recently played tracks, normalized and sorted.
+
+    Paginates past Spotify's 50-item-per-call cap via the `before` cursor,
+    up to max_plays -- a single page rarely contains enough repetition for
+    Trigger/Companion/Spiral/Locked to fire and fragments into too many
+    tiny sessions. Stops early and gracefully if the account has less
+    history than max_plays (empty items or no further cursor) -- never
+    assumes max_plays is always reachable.
+    """
     plays = []
-    for item in results["items"]:
-        track = item.get("track")
-        if track is None:
-            # Spotify can return a null track for e.g. local files played
-            # through a client -- skip rather than crash.
-            continue
-        artist_name = ", ".join(a["name"] for a in track.get("artists", [])) or "Unknown"
-        plays.append({
-            "played_at": item["played_at"],
-            "track_id": track.get("id"),
-            "track_name": track["name"],
-            "artist_name": artist_name,
-        })
+    before = None
+    while len(plays) < max_plays:
+        results = sp.current_user_recently_played(limit=50, before=before)
+        items = results["items"]
+        if not items:
+            break
+        for item in items:
+            track = item.get("track")
+            if track is None:
+                # Spotify can return a null track for e.g. local files played
+                # through a client -- skip rather than crash.
+                continue
+            artist_name = ", ".join(a["name"] for a in track.get("artists", [])) or "Unknown"
+            plays.append({
+                "played_at": item["played_at"],
+                "track_id": track.get("id"),
+                "track_name": track["name"],
+                "artist_name": artist_name,
+            })
+        cursors = results.get("cursors")
+        if not cursors or not cursors.get("before"):
+            break  # no more history available
+        before = cursors["before"]
     plays.sort(key=lambda p: p["played_at"])
     return plays
 
