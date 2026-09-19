@@ -82,3 +82,5 @@
 - **Proposed, then rejected:**
   - A percentage-based "mostly insufficient_data" threshold for Glimpse — rejected in favor of the categorical rule, since it would need real-data calibration with no evidence to justify a specific number.
 
+  ## 2026-09-19
+
