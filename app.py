@@ -7,6 +7,7 @@ API instead of listening_history.db) and the web/session layer around it.
 """
 
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -17,6 +18,7 @@ from spotipy.cache_handler import FlaskSessionCacheHandler
 from spotipy.oauth2 import SpotifyOAuth
 
 from context_detection import build_contexts
+from playlist_naming import generate_playlist_name
 from spotify_playlist import create_playlist
 
 REPO_DIR = Path(__file__).resolve().parent
@@ -127,6 +129,10 @@ def analyze():
     plays = fetch_recent_plays(sp)
     contexts = build_contexts(plays)
 
+    now = datetime.now(timezone.utc)
+    for context in contexts:
+        context["playlist_name"] = generate_playlist_name(context["label"], now)
+
     return render_template(
         "contexts.html",
         display_name=me.get("display_name") or me["id"],
@@ -148,6 +154,10 @@ def create_playlist_route():
     if context_id is None:
         return jsonify({"error": "missing 'context_id'"}), 400
 
+    playlist_name = request.form.get("playlist_name")
+    if not playlist_name:
+        return jsonify({"error": "missing 'playlist_name'"}), 400
+
     plays = fetch_recent_plays(sp)
     contexts = build_contexts(plays)
 
@@ -161,7 +171,7 @@ def create_playlist_route():
     result = create_playlist(
         sp,
         match["track_ids"],
-        f"{match['label']} — from your recent listening",
+        playlist_name,
         description=match["category_description"],
     )
     return render_template("playlist_created.html", result=result)
