@@ -17,7 +17,6 @@
       <p><strong>{{ context.playlist_name }}</strong></p>
       <p>{{ context.category_description }}</p>
       <p>{{ context.description }}</p>
-      <p>{{ context.track_count }} tracks</p>
       <form method="post" action="{{ url_for('create_playlist_route') }}">
         <input type="hidden" name="context_id" value="{{ context.context_id }}">
         <input type="hidden" name="playlist_name" value="{{ context.playlist_name }}">

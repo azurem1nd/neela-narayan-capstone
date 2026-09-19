@@ -121,6 +121,31 @@ def build_contexts(plays):
 }
 ```
 
+**Consolidating same-label sessions into one card** (added 2026-09-19, see Known Limitations #6) — a separate, purely presentational step, applied *after* `build_contexts()`, which itself stays exactly as above (one context per session):
+```python
+def consolidate_by_category(contexts):
+    groups = {}
+    for c in contexts:
+        groups.setdefault(c["label"], []).append(c)
+
+    consolidated = []
+    for label, group in groups.items():
+        merged_track_ids = list(dict.fromkeys(tid for c in group for tid in c["track_ids"]))
+        merged_playlist_ids = list(dict.fromkeys(tid for c in group for tid in c["playlist_track_ids"]))
+        description = group[0]["description"] if len(group) == 1 else f"{label} - {len(merged_playlist_ids)} tracks"
+        consolidated.append({
+            "context_id": label,
+            "label": label,
+            "description": description,
+            "category_description": group[0]["category_description"],
+            "track_ids": merged_track_ids,
+            "playlist_track_ids": merged_playlist_ids,
+            "track_count": len(merged_playlist_ids),
+        })
+    return consolidated
+```
+`app.py` calls this after `build_contexts()` in both `/analyze` (for rendering) and `/create-playlist` (before its `context_id` lookup) — `build_contexts()` itself is never called by anything else and is unaware consolidation happens.
+
 ## Known Limitations
 
 **0. Why `MIN_REPRESENTATION_RATIO = 0.15`, specifically.** Without a representation floor, a session with 1 Trigger track out of 22 distinct tracks (4.5%) would be labeled "Trigger" purely because nothing else qualified to compete — not because Trigger is actually representative of that session. Verified against real live data (a single `current_user_recently_played(limit=50)` fetch): two real sessions had plurality winners covering only 4.8% (1/21) and 12.0% (3/25) of their distinct tracks. 15% is the smallest threshold that routes *both* of those thin-signal cases to the session-native fallback instead — 20% and 25% were also tested and produced identical results on that same data, so 15% is the least aggressive choice the evidence actually supports, not an arbitrarily stricter one.
@@ -135,13 +160,15 @@ def build_contexts(plays):
 
 **2b. Locked/Exploration thresholds were calibrated on a different data regime than they're now used in.** They were originally proposed (as "Block"/Exploration) against an accumulated multi-day local database (`listening_history.db`, via the old cron pipeline), calibrated on exactly 2 real data points for the boundary. They're now applied to a single live `current_user_recently_played(limit=50)` fetch per visit — a much smaller, single-window sample that may produce a different `track_count`/`distinct_artist_count` distribution than the regime they were calibrated against. Treat as provisional; revisit once real usage data from the live flow exists.
 
-**3. `context_id` is the session's index within one `build_contexts()` call, not a stable identifier across requests.** `/create-playlist` re-fetches and re-classifies fresh, then looks up the matching `context_id` — if new plays happened between viewing contexts and clicking "create playlist," the session numbering could shift and the lookup could miss. Handled as a clear "try again" error, not silently using the wrong tracks — not solved further since re-fetching fresh (rather than caching results) is the app's established stateless pattern.
+**3. `context_id` is not a stable identifier across requests.** `/create-playlist` re-fetches, re-classifies, and re-consolidates fresh, then looks up the matching `context_id` — if new plays happened between viewing contexts and clicking "create playlist," what a category's merged tracks are could shift and the lookup could still miss (e.g. if a category disappears from the window entirely). Handled as a clear "try again" error, not silently using the wrong tracks — not solved further since re-fetching fresh (rather than caching results) is the app's established stateless pattern. Since 2026-09-19 (#6), `context_id` is the category label string rather than a per-session index — incidentally more stable than before (a label surviving a re-fetch is more likely than a specific session index landing on the same session), but not a full fix for this limitation.
 
 **4. A track's classification reflects its entire play history in the fetched window, not just its plays within one particular session.** A track classified "Companion" (returned on a separate day) can still appear in an earlier, single-play session from that same window — its classification is who it *is* across the whole fetch, not scoped to any one session. This is intentional (matches `memory-category-thresholds`'s own scope — Trigger/Companion are cross-session, track-level concepts), not a bug.
 
 **5. `playlist_track_ids` added 2026-09-19 to fix a real mismatch between a context's evidence text and what a created playlist actually contained.** Before this, `/create-playlist` used `track_ids` (the full session) for every label, so a context reading "Trigger — 7 of 14 tracks show this pattern" produced a 14-track playlist, not a 7-track one — the plurality-vote count (`count` in the `dominant` tuple) was only ever used to build the label/description text, never to select which tracks belonged in a playlist. Fixed by computing `playlist_track_ids` alongside `label`/`description`: for `Trigger`/`Companion`/`Spiral`, only the tracks whose own classification equals the winning label; for `Locked`/`Exploration`/`Glimpse`, identical to `track_ids` (no per-track "qualifies" concept exists for session-native labels, so there's nothing to filter down to). At the time this was written, `track_ids` and `track_count` were left unchanged (still the full session) — see #5b, same day, for why that was superseded.
 
 **5b. `description`'s "X of Y" text removed, `track_count` changed to match the playlist (2026-09-19, same day as #5).** #5 fixed what got sent to Spotify but left both displayed numbers showing the full session (e.g. "Trigger — 7 of 14 tracks show this pattern." and a separate "14 tracks" line), which could still read as a mismatch against the 7-track playlist actually created. Fixed by: (1) dropping the "of {distinct_track_count}" clause and the "show this pattern"/em-dash phrasing entirely for the `dominant` branch — the format is now exactly `"{label} - {count} tracks"` (e.g. `"Trigger - 7 tracks"`, plain hyphen); (2) changing `track_count` from `distinct_track_count` to `len(playlist_track_ids)` for every branch. Since `playlist_track_ids` already equals the full session for `Locked`/`Exploration`/`Glimpse`, this is a no-op for those three labels — `track_count`'s value only actually changes for `Trigger`/`Companion`/`Spiral`. `distinct_track_count` itself is untouched internally (still drives `MIN_REPRESENTATION_RATIO`/`MIN_DISTINCT_TRACKS_FOR_EVIDENCE`); only the field exposed on the context dict changed what it reads from. Net effect: `track_count == len(playlist_track_ids)` always holds, for every context, by construction — the session's total track count is no longer surfaced anywhere in `description` for track-level contexts (still available via `len(track_ids)` if ever needed).
+
+**6. `consolidate_by_category()` added 2026-09-19 -- a deliberate reversal of "context = one session" for display/playlist purposes.** Multiple sessions could independently classify the same label (e.g. two Trigger sessions), each rendering its own card -- not a bug, just never addressed before now. Consolidating them means merging their tracks too: a "Trigger" card's playlist is now the union of every Trigger session's qualifying tracks in the fetch, not one specific occasion's. This is functionally similar in shape to the *earlier*, explicitly-fixed bug where playlist creation pooled every track sharing a label across the whole fetch (see the Purpose section's "pooling every track anywhere that happens to share a label") -- the difference is this pooling is now deliberate and scoped to one category at a time, not accidental and scoped to nothing. `build_contexts()` itself still returns one context per session, untouched and independently correct; consolidation is a separate, explicit step layered on top in `app.py`, not baked into classification. A single-session category's card is unaffected (`description` preserved exactly); only a genuinely merged (2+ session) category gets the new `"{label} - {count} tracks"` description, since `Locked`/`Exploration`/`Glimpse`'s richer "N tracks across M artists" text can't be accurately recomputed post-merge without re-deriving artist sets (not currently exercised by real data -- no real fetch has ever produced 2+ sessions sharing a session-native label).
 
 ## Verification Checklist
 - [ ] A session with a clear majority (e.g. 2 Companion + 1 Trigger, 67%) labels as the majority, with an accurate "`N` of `M`" evidence count
@@ -159,3 +186,6 @@ def build_contexts(plays):
 - [ ] For a `Locked`/`Exploration`/`Glimpse` context, `playlist_track_ids == track_ids` exactly (no filtering applied)
 - [ ] `track_count == len(playlist_track_ids)` for every context, of every label, always
 - [ ] `/create-playlist` is called with `playlist_track_ids`, not `track_ids` — a mocked round trip confirms the playlist actually created contains only the winning label's tracks for a Trigger/Companion/Spiral context, and that its size matches the card's displayed `track_count`
+- [ ] `consolidate_by_category()` produces at most one context per distinct `label` — two sessions sharing a label merge into one card whose `playlist_track_ids` is the union of both (no duplicates), and `track_count` equals that union's size
+- [ ] A single-session category's consolidated card is byte-for-byte identical (label, description, track_count, playlist_track_ids) to what `build_contexts()` alone would have produced for it
+- [ ] `/analyze`'s debug summary line (`session_count`) still reports the true number of *detected sessions* (`build_contexts()`'s raw output length), not the number of consolidated cards

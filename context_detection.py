@@ -189,3 +189,35 @@ def build_contexts(plays: list[dict]) -> list[dict]:
         })
 
     return contexts
+
+
+def consolidate_by_category(contexts: list[dict]) -> list[dict]:
+    """Merge same-label session contexts into at most one card per
+    category, for display and playlist creation. Purely a presentation
+    step -- classification (build_contexts) is unchanged and unaware
+    this happens.
+
+    Single-session categories (the common case) pass through with their
+    description untouched; a genuinely merged (2+ session) category gets
+    a new, generic "{label} - {count} tracks" description, since no
+    format for that case existed before to preserve.
+    """
+    groups: dict[str, list[dict]] = {}
+    for c in contexts:
+        groups.setdefault(c["label"], []).append(c)
+
+    consolidated = []
+    for label, group in groups.items():
+        merged_track_ids = list(dict.fromkeys(tid for c in group for tid in c["track_ids"]))
+        merged_playlist_ids = list(dict.fromkeys(tid for c in group for tid in c["playlist_track_ids"]))
+        description = group[0]["description"] if len(group) == 1 else f"{label} - {len(merged_playlist_ids)} tracks"
+        consolidated.append({
+            "context_id": label,  # was a per-session int; now the category itself
+            "label": label,
+            "description": description,
+            "category_description": group[0]["category_description"],
+            "track_ids": merged_track_ids,
+            "playlist_track_ids": merged_playlist_ids,
+            "track_count": len(merged_playlist_ids),
+        })
+    return consolidated

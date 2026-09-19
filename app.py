@@ -17,7 +17,7 @@ import spotipy
 from spotipy.cache_handler import FlaskSessionCacheHandler
 from spotipy.oauth2 import SpotifyOAuth
 
-from context_detection import build_contexts
+from context_detection import build_contexts, consolidate_by_category
 from playlist_naming import generate_playlist_name
 from spotify_playlist import create_playlist
 
@@ -127,7 +127,8 @@ def analyze():
 
     me = sp.current_user()
     plays = fetch_recent_plays(sp)
-    contexts = build_contexts(plays)
+    raw_contexts = build_contexts(plays)
+    contexts = consolidate_by_category(raw_contexts)
 
     now = datetime.now(timezone.utc)
     for context in contexts:
@@ -140,7 +141,7 @@ def analyze():
         total_plays=len(plays),
         first_played=plays[0]["played_at"] if plays else None,
         last_played=plays[-1]["played_at"] if plays else None,
-        session_count=len(contexts),
+        session_count=len(raw_contexts),
     )
 
 
@@ -150,8 +151,8 @@ def create_playlist_route():
     if sp is None:
         return redirect(url_for("index"))
 
-    context_id = request.form.get("context_id", type=int)
-    if context_id is None:
+    context_id = request.form.get("context_id")
+    if not context_id:
         return jsonify({"error": "missing 'context_id'"}), 400
 
     playlist_name = request.form.get("playlist_name")
@@ -159,7 +160,7 @@ def create_playlist_route():
         return jsonify({"error": "missing 'playlist_name'"}), 400
 
     plays = fetch_recent_plays(sp)
-    contexts = build_contexts(plays)
+    contexts = consolidate_by_category(build_contexts(plays))
 
     match = next((c for c in contexts if c["context_id"] == context_id), None)
     if match is None:
