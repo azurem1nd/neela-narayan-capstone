@@ -28,6 +28,8 @@ Creating a playlist and populating it is **two separate API calls** — never as
    ```
    `track_ids` is a list of bare Spotify track ID strings (not full `spotify:track:...` URIs).
 
+**Optional playlist description:** `current_user_playlist_create`/`user_playlist_create` both accept a `description` kwarg (verified against the installed spotipy 2.26.0's signature) — pass it at creation time, it can't be added after the fact via `playlist_add_items`. The canonical wrapper, `spotify_playlist.py::create_playlist(sp, track_ids, name, description="")`, exposes this — e.g. `context-detection`'s `CATEGORY_DESCRIPTIONS` text is passed through as a context's description when `/create-playlist` materializes it, so the playlist itself explains what the category means, not just its name.
+
 ## Naming Convention (for repeated top-tracks test runs)
 
 When this skill is used to materialize a snapshot of a user's *current* top tracks (as in `experiments/gemini-agent-test/agent_test.py`), name the playlist deterministically as:

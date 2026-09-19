@@ -137,7 +137,12 @@ def create_playlist_route():
                       "changed since you viewed it, try again"
         }), 404
 
-    result = create_playlist(sp, match["track_ids"], f"{match['label']} — from your recent listening")
+    result = create_playlist(
+        sp,
+        match["track_ids"],
+        f"{match['label']} — from your recent listening",
+        description=match["category_description"],
+    )
     return render_template("playlist_created.html", result=result)
 
 

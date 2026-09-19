@@ -8,6 +8,7 @@
   {% for context in contexts %}
     <div>
       <h2>{{ context.label }}</h2>
+      <p>{{ context.category_description }}</p>
       <p>{{ context.description }}</p>
       <p>{{ context.track_count }} tracks</p>
       <form method="post" action="{{ url_for('create_playlist_route') }}">

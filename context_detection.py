@@ -10,7 +10,7 @@ Three-way decision per session, in order:
    (see MIN_REPRESENTATION_RATIO) -> that label wins outright.
 2. No dominant qualifying track, but the session has enough distinct
    tracks to say something about it (see MIN_DISTINCT_TRACKS_FOR_EVIDENCE)
-   -> a session-native label (Block/Exploration) based on artist
+   -> a session-native label (Locked/Exploration) based on artist
    diversity, regardless of whether any track happened to qualify
    elsewhere in the fetch. This is deliberately independent of
    cross-session track classification: a session can be genuinely
@@ -43,7 +43,7 @@ QUALIFYING_LABELS = {"Spiral", "Trigger", "Companion"}
 MIN_REPRESENTATION_RATIO = 0.15
 
 # Minimum distinct tracks a session needs to reach the diversity fallback
-# (Block/Exploration) instead of Glimpse, when no qualifying track
+# (Locked/Exploration) instead of Glimpse, when no qualifying track
 # dominates. PROVISIONAL: real session data (12 real sessions, as of
 # 2026-09-19) has no example of a multi-track session with zero qualifying
 # tracks -- every real session with >=2 distinct tracks already has at
@@ -53,6 +53,22 @@ MIN_REPRESENTATION_RATIO = 0.15
 # real multi-track, zero-repeat session is observed -- see SKILL.md.
 MIN_DISTINCT_TRACKS_FOR_EVIDENCE = 2
 
+# Short, human-readable explanations of what each category MEANS --
+# distinct from the per-session "description" field build_contexts()
+# generates, which explains the evidence for *this specific* session.
+# Kept consistent with track_features.py::classify_track()'s docstring /
+# memory-category-thresholds/SKILL.md (Trigger/Companion/Spiral) and this
+# module's own docstring / _diversity_fallback() (Locked/Exploration/Glimpse)
+# -- update both places together if a definition changes.
+CATEGORY_DESCRIPTIONS = {
+    "Trigger": "You played this on repeat for a day, then just... moved on.",
+    "Companion": "This one keeps showing up. You never really stopped playing it.",
+    "Spiral": "You hit repeat on this one, hard, for a little while.",
+    "Locked": "A few artists, over and over — you were locked in.",
+    "Exploration": "You wandered — lots of different tracks, lots of different artists, no real pattern.",
+    "Glimpse": "A flicker, not yet a pattern.",
+}
+
 
 def _diversity_fallback(session: dict, distinct_track_count: int) -> dict:
     """Session-native label for sessions with no dominant qualifying
@@ -60,7 +76,7 @@ def _diversity_fallback(session: dict, distinct_track_count: int) -> dict:
     doesn't meet MIN_REPRESENTATION_RATIO) but enough distinct tracks
     (MIN_DISTINCT_TRACKS_FOR_EVIDENCE) to judge the session's own breadth.
 
-    Block: concentrated listening, few distinct artists relative to tracks.
+    Locked: concentrated listening, few distinct artists relative to tracks.
     Exploration: diverse listening, many distinct artists relative to tracks.
 
     Uses distinct_track_count (deduplicated), not session["track_count"]
@@ -71,7 +87,7 @@ def _diversity_fallback(session: dict, distinct_track_count: int) -> dict:
     ratio = session["distinct_artist_count"] / distinct_track_count
     if ratio < 0.5:
         return {
-            "label": "Block",
+            "label": "Locked",
             "description": (
                 f"{distinct_track_count} tracks across "
                 f"{session['distinct_artist_count']} artists — a concentrated run."
@@ -96,7 +112,8 @@ def build_contexts(plays: list[dict]) -> list[dict]:
 
     Returns:
         List of context dicts, one per detected session:
-        {context_id, label, description, track_ids, track_count}.
+        {context_id, label, description, category_description, track_ids,
+        track_count}.
     """
     by_track: dict[str, list[dict]] = {}
     for p in plays:
@@ -150,6 +167,7 @@ def build_contexts(plays: list[dict]) -> list[dict]:
             "context_id": sess["session_id"],
             "label": label,
             "description": description,
+            "category_description": CATEGORY_DESCRIPTIONS[label],
             "track_ids": distinct_ids,
             "track_count": distinct_track_count,
         })
