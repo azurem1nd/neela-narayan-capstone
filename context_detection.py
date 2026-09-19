@@ -5,16 +5,23 @@ per-track classification, so a session can inherit a context label from
 its qualifying member tracks (plurality vote) instead of requiring every
 individual track to independently qualify.
 
-Two distinct fallback cases, kept conceptually separate:
-- Zero qualifying tracks (every distinct track is track_features.py's
-  "insufficient_data" -- fewer than 2 plays, no pattern measurable) ->
-  "Glimpse". This IS the user-facing name for insufficient_data, applied
-  at whatever size the session actually is -- not a technical state, not
-  restricted to single-track sessions.
-- Some qualifying tracks exist, but the plurality winner doesn't meet a
-  minimum representation threshold (see MIN_REPRESENTATION_RATIO) -- real
-  signal exists, just not dominant. Falls back to a session-native label
-  (Block/Exploration) based on artist diversity instead.
+Three-way decision per session, in order:
+1. A qualifying track (Spiral/Trigger/Companion) dominates the session
+   (see MIN_REPRESENTATION_RATIO) -> that label wins outright.
+2. No dominant qualifying track, but the session has enough distinct
+   tracks to say something about it (see MIN_DISTINCT_TRACKS_FOR_EVIDENCE)
+   -> a session-native label (Block/Exploration) based on artist
+   diversity, regardless of whether any track happened to qualify
+   elsewhere in the fetch. This is deliberately independent of
+   cross-session track classification: a session can be genuinely
+   exploratory (many distinct tracks/artists, no repeats) even when every
+   one of its tracks is "insufficient_data" on its own -- Exploration is
+   about this session's own breadth, not about borrowing a label from a
+   track's unrelated history elsewhere in the fetch.
+3. Neither of the above -- the session itself is too small to say
+   anything -> "Glimpse". This IS the user-facing name for
+   insufficient_data at the session level: not a technical state, and no
+   longer gated on cross-session track qualification (see 2).
 
 See .claude/skills/context-detection/SKILL.md for the full methodology
 and known limitations.
@@ -35,11 +42,23 @@ QUALIFYING_LABELS = {"Spiral", "Trigger", "Companion"}
 # on that same data, so 15% is the least aggressive choice that still works.
 MIN_REPRESENTATION_RATIO = 0.15
 
+# Minimum distinct tracks a session needs to reach the diversity fallback
+# (Block/Exploration) instead of Glimpse, when no qualifying track
+# dominates. PROVISIONAL: real session data (12 real sessions, as of
+# 2026-09-19) has no example of a multi-track session with zero qualifying
+# tracks -- every real session with >=2 distinct tracks already has at
+# least one Spiral/Trigger/Companion track. 2 is the smallest value that
+# preserves Glimpse's original single-track meaning while not requiring
+# cross-session repetition evidence for anything larger. Revisit once a
+# real multi-track, zero-repeat session is observed -- see SKILL.md.
+MIN_DISTINCT_TRACKS_FOR_EVIDENCE = 2
+
 
 def _diversity_fallback(session: dict, distinct_track_count: int) -> dict:
-    """Session-native label for sessions with some qualifying signal that
-    didn't meet MIN_REPRESENTATION_RATIO -- real pattern exists somewhere
-    in the session, just not dominant enough to name the whole session.
+    """Session-native label for sessions with no dominant qualifying
+    pattern (either no qualifying track at all, or one that exists but
+    doesn't meet MIN_REPRESENTATION_RATIO) but enough distinct tracks
+    (MIN_DISTINCT_TRACKS_FOR_EVIDENCE) to judge the session's own breadth.
 
     Block: concentrated listening, few distinct artists relative to tracks.
     Exploration: diverse listening, many distinct artists relative to tracks.
@@ -99,33 +118,40 @@ def build_contexts(plays: list[dict]) -> list[dict]:
     contexts = []
     for sess in sessions:
         distinct_ids = list(dict.fromkeys(sess["track_ids"]))
+        distinct_track_count = len(distinct_ids)
         labels = [classification_by_track[tid] for tid in distinct_ids]
         qualifying = [label for label in labels if label in QUALIFYING_LABELS]
 
-        if not qualifying:
-            # Every distinct track is insufficient_data -- the user-facing
-            # name for that is Glimpse, at whatever size this session is.
+        dominant = None
+        if qualifying:
+            candidate, count = Counter(qualifying).most_common(1)[0]
+            if count / distinct_track_count >= MIN_REPRESENTATION_RATIO:
+                dominant = (candidate, count)
+
+        if dominant is not None:
+            label, count = dominant
+            description = f"{label} — {count} of {distinct_track_count} tracks show this pattern."
+        elif distinct_track_count >= MIN_DISTINCT_TRACKS_FOR_EVIDENCE:
+            # No dominant qualifying track, but enough distinct tracks to
+            # judge this session's own breadth -- independent of whether
+            # any track happened to qualify elsewhere in the fetch.
+            fallback = _diversity_fallback(sess, distinct_track_count)
+            label = fallback["label"]
+            description = fallback["description"]
+        else:
+            # Too few distinct tracks to say anything about this session.
             label = "Glimpse"
             description = (
-                f"{len(distinct_ids)} tracks, none played more than once in "
+                f"{distinct_track_count} tracks, none played more than once in "
                 "this window — a fleeting listening encounter."
             )
-        else:
-            winner, count = Counter(qualifying).most_common(1)[0]
-            if count / len(distinct_ids) >= MIN_REPRESENTATION_RATIO:
-                label = winner
-                description = f"{label} — {count} of {len(distinct_ids)} tracks show this pattern."
-            else:
-                fallback = _diversity_fallback(sess, len(distinct_ids))
-                label = fallback["label"]
-                description = fallback["description"]
 
         contexts.append({
             "context_id": sess["session_id"],
             "label": label,
             "description": description,
             "track_ids": distinct_ids,
-            "track_count": len(distinct_ids),
+            "track_count": distinct_track_count,
         })
 
     return contexts
