@@ -103,30 +103,30 @@
   - Playlist Nomenclature and Playlist Description Generation stay separate skills/responsibilities; a playlist's name is computed once and threaded through rather than reconstructed independently on the webpage and in the Spotify API call.
 
 ## 2026-09-19 — Part B
-(Continues from Part A — frontend/visual redesign, testing, and validation phase.)
-- **Time spent / tokens used:** not independently tracked for this portion of the session — no separate transcript timestamps were pulled for Part B specifically (see Part A above for the day's overall figures).
+(Continues from Part A — the frontend/visual redesign, testing, and validation phase.)
+- **Time spent / tokens used:** not separately tracked for this portion of the session — see Part A above for the day's overall session figures.
 - **Shipped (implemented):**
-  - Moved the project from the functional MVP toward the actual visual identity of "Untitled Vinyl Player" — redesigned the frontend around the vinyl/record-label metaphor already established in `plan.md`, rather than continuing with the unstyled default-HTML pages.
-  - Rebuilt the landing page (`templates/index.html`) around a hand-built CSS vinyl disc and tonearm: the tonearm rests off the record in the logged-out state, and drops onto the record — which spins — once Spotify is connected.
-  - Redesigned `templates/contexts.html` so each detected listening context renders as a record-sleeve-style card instead of a plain list.
-  - Redesigned `templates/playlist_created.html` to match the same visual system.
-  - Introduced a shared warm paper/ink/brass visual system (new `static/css/style.css`, new `templates/base.html`), with a distinct muted color assigned per listening category (Trigger, Companion, Spiral, Locked, Exploration, Glimpse) so a context's card is identifiable by color at a glance.
-  - Set interface typography to Newsreader for the main interface and reserved IBM Plex Mono for metadata (playlist names, session counts, dates).
-  - Tightened interface copy throughout to be more direct and specific (e.g. empty-state and button text rewritten in plainer, more active language).
-  - Implemented the entire redesign within the existing Flask app and template structure — no changes to Spotify OAuth, listening-history retrieval, session detection, or context-generation logic.
+  - Moved the project from the functional MVP toward the actual visual identity of "Untitled Vinyl Player" — the frontend was redesigned around the vinyl/record-label metaphor already established in the project concept, in place of the unstyled default HTML.
+  - Rebuilt the landing page around a hand-built vinyl disc and tonearm, with distinct logged-out and connected states — the record spins once Spotify is connected.
+  - Redesigned the listening-context page so each detected context renders as a record-sleeve-style card instead of a plain list.
+  - Redesigned the playlist-created confirmation page to match the same visual system.
+  - Introduced a shared warm paper/ink/brass visual system, with a distinct muted color per listening category.
+  - Set interface typography to Newsreader for the main interface and IBM Plex Mono for metadata.
+  - Tightened interface copy throughout to be more direct and specific.
+  - Implemented the redesign within the existing Flask application and template structure — the underlying Spotify/listening logic was not rebuilt.
 - **Investigated / tested:**
   - Tested the redesigned frontend at both desktop and mobile widths.
-  - Found a real mobile-only bug during that testing: at narrow viewports, hero text (wordmark and lede) overflowed the edge of the screen, traced to flexbox column cross-axis sizing not wrapping the text as expected.
-  - Fixed the overflow by constraining the `.hero` flex children (`min-width: 0` / `max-width: 100%`, plus a defensive `overflow-x: hidden` on `body`), then re-tested and confirmed the mobile layout wraps correctly with no overflow.
-  - Sanity-checked the full redesign (landing, contexts, and playlist-created pages, including both logged-in and logged-out hero states) after the fix.
+  - Found a real mobile-only issue during that testing: text overflow caused by flexbox layout behavior.
+  - Fixed the issue and re-tested the mobile layout successfully.
+  - Sanity-checked the full redesign after the fix.
 - **Validated (user testing):**
   - Tested the current build with 4 people.
-  - Every tester's detected listening contexts/clusters displayed successfully end-to-end.
+  - All detected listening clusters were successfully shown for every tester.
   - Testers reported that the clusters felt accurate/representative of their own listening behavior.
-  - This is early, qualitative validation of the clustering and context-detection system, not a statistically conclusive result — 4 testers is a small, informal sample. It was useful specifically because it tested whether the system's automatically generated contexts actually corresponded to how people understood their own listening behavior, not just whether the pipeline ran without errors.
+  - Framed as early, qualitative validation of the clustering and context-detection system, not a statistically conclusive result — useful specifically because it tested whether the system's automatically generated contexts actually corresponded to how people understood their own listening behavior, not just whether the pipeline ran without errors.
 - **Decided:**
-  - This phase was a human-directed, AI-assisted implementation: product concept, goals, interaction direction, and visual direction came from me; Claude Code was used to implement, inspect, test, debug, and iterate on the frontend.
-  - Kept the existing Spotify OAuth, listening-history retrieval, session detection, and context-generation logic untouched — this phase was scoped to templates/CSS only, not the underlying pipeline.
-  - After completing and testing the redesign, committed and pushed the changes as a checkpoint, creating a stable version to return to while continuing visual experimentation and refinement.
-- **Next:** Visual refinement and asset/design iteration — further refining the vinyl disc, the record-sleeve/card system, colors, typography, and overall page composition.
+  - This phase was a human-directed, AI-assisted implementation: product concept, goals, interaction direction, and visual direction came from the user; Claude Code was used to implement, inspect, test, debug, and iterate on the frontend.
+  - The existing Spotify OAuth, listening-history retrieval, session detection, and context-generation logic were retained rather than rebuilt during this phase.
+  - After completing and testing the redesign, the changes were committed and pushed as a checkpoint, creating a stable version to return to while continuing visual experimentation and refinement.
+- **Next:** Visual refinement and asset/design iteration, including refining the vinyl, the record-sleeve/card system, colors, typography, and overall composition.
 
