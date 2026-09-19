@@ -114,6 +114,10 @@ def analyze():
         "contexts.html",
         display_name=me.get("display_name") or me["id"],
         contexts=contexts,
+        total_plays=len(plays),
+        first_played=plays[0]["played_at"] if plays else None,
+        last_played=plays[-1]["played_at"] if plays else None,
+        session_count=len(contexts),
     )
 
 

@@ -5,6 +5,12 @@
   <h1>Untitled Vinyl Player</h1>
   <p>Connected as {{ display_name }}. Your listening contexts:</p>
 
+  {% if total_plays %}
+    <p><small>Fetched {{ total_plays }} plays, spanning {{ first_played }} to {{ last_played }} → grouped into {{ session_count }} session{{ 's' if session_count != 1 }}.</small></p>
+  {% else %}
+    <p><small>Fetched 0 plays.</small></p>
+  {% endif %}
+
   {% for context in contexts %}
     <div>
       <h2>{{ context.label }}</h2>
