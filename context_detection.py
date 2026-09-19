@@ -117,8 +117,10 @@ def build_contexts(plays: list[dict]) -> list[dict]:
         session's distinct tracks; `playlist_track_ids` is what a
         playlist made from this context should actually contain -- only
         the winning label's tracks for Trigger/Companion/Spiral, the same
-        as `track_ids` for Locked/Exploration/Glimpse (see Known
-        Limitations in context-detection/SKILL.md).
+        as `track_ids` for Locked/Exploration/Glimpse. `track_count` is
+        always `len(playlist_track_ids)`, so it (and the evidence in
+        `description`) always match what a created playlist actually
+        contains (see Known Limitations in context-detection/SKILL.md).
     """
     by_track: dict[str, list[dict]] = {}
     for p in plays:
@@ -152,7 +154,7 @@ def build_contexts(plays: list[dict]) -> list[dict]:
 
         if dominant is not None:
             label, count = dominant
-            description = f"{label} — {count} of {distinct_track_count} tracks show this pattern."
+            description = f"{label} - {count} tracks"
             # Only the tracks whose own classification matches the winning
             # label -- not the whole session -- should end up in a playlist
             # made from this context.
@@ -183,7 +185,7 @@ def build_contexts(plays: list[dict]) -> list[dict]:
             "category_description": CATEGORY_DESCRIPTIONS[label],
             "track_ids": distinct_ids,
             "playlist_track_ids": playlist_track_ids,
-            "track_count": distinct_track_count,
+            "track_count": len(playlist_track_ids),
         })
 
     return contexts
