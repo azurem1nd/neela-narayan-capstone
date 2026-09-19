@@ -170,7 +170,7 @@ def create_playlist_route():
 
     result = create_playlist(
         sp,
-        match["track_ids"],
+        match["playlist_track_ids"],
         playlist_name,
         description=match["category_description"],
     )

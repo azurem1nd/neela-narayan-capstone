@@ -14,6 +14,8 @@ Give each detected listening session a single, evidence-based label — a "conte
 
 **Every final label carries a `category_description` field** — a short, static, human-voiced explanation of what the category *means*, distinct from the per-session `description` field here (which explains the evidence *for this specific session*, e.g. "3 of 23 tracks show this pattern"). The dict backing it (`CATEGORY_DESCRIPTIONS`), where it's used, and the writing/voice guidelines for it are owned entirely by `category-descriptions/SKILL.md` — see that skill, not this one, for its content and how to change it.
 
+**`track_ids` (the full session) and `playlist_track_ids` (what a playlist should contain) are different fields, on purpose.** `track_ids` is always every distinct track in the session, unchanged since this module's first version. `playlist_track_ids` (added 2026-09-19, see Known Limitations #5) is only the subset that should actually go into a created playlist: for `Trigger`/`Companion`/`Spiral`, that's just the tracks whose *own* classification matches the winning label — not the whole session, which can be much larger than the evidence count in `description` implies. For `Locked`/`Exploration`/`Glimpse` there's no per-track "qualifies" concept, so `playlist_track_ids` is identical to `track_ids`. `/create-playlist` uses `playlist_track_ids`; nothing else changed about how `track_ids`/`track_count` are computed or displayed.
+
 **Framing note:** a "context" here is one detected session, not a recurring pattern aggregated across many sessions over time. The original project vision (`plan.md`) describes clusters as persistent identities (e.g. "shower songs") that would need accumulated history across weeks — this app deliberately has no persistent database (a live one-shot fetch per visit), so per-session context is the defensible, MVP-scoped definition, not a full realization of that original vision.
 
 ## Prerequisites
@@ -84,12 +86,15 @@ def build_contexts(plays):
         if dominant is not None:
             label, count = dominant
             description = f"{label} — {count} of {distinct_track_count} tracks show this pattern."
+            playlist_track_ids = [tid for tid in distinct_ids if classification_by_track[tid] == label]
         elif distinct_track_count >= MIN_DISTINCT_TRACKS_FOR_EVIDENCE:
             fallback = _diversity_fallback(sess, distinct_track_count)
             label, description = fallback["label"], fallback["description"]
+            playlist_track_ids = distinct_ids
         else:
             label = "Glimpse"
             description = f"{distinct_track_count} tracks, none played more than once in this window — a fleeting listening encounter."
+            playlist_track_ids = distinct_ids
 
         contexts.append({
             "context_id": sess["session_id"],
@@ -97,6 +102,7 @@ def build_contexts(plays):
             "description": description,
             "category_description": CATEGORY_DESCRIPTIONS[label],
             "track_ids": distinct_ids,
+            "playlist_track_ids": playlist_track_ids,
             "track_count": distinct_track_count,
         })
     return contexts
@@ -110,6 +116,7 @@ def build_contexts(plays):
     "description": "Companion — 2 of 3 tracks show this pattern.",
     "category_description": "This one keeps showing up. You never really stopped playing it.",
     "track_ids": ["X", "Y", "Z"],
+    "playlist_track_ids": ["X", "Y"],
     "track_count": 3,
 }
 ```
@@ -132,6 +139,8 @@ def build_contexts(plays):
 
 **4. A track's classification reflects its entire play history in the fetched window, not just its plays within one particular session.** A track classified "Companion" (returned on a separate day) can still appear in an earlier, single-play session from that same window — its classification is who it *is* across the whole fetch, not scoped to any one session. This is intentional (matches `memory-category-thresholds`'s own scope — Trigger/Companion are cross-session, track-level concepts), not a bug.
 
+**5. `playlist_track_ids` added 2026-09-19 to fix a real mismatch between a context's evidence text and what a created playlist actually contained.** Before this, `/create-playlist` used `track_ids` (the full session) for every label, so a context reading "Trigger — 7 of 14 tracks show this pattern" produced a 14-track playlist, not a 7-track one — the plurality-vote count (`count` in the `dominant` tuple) was only ever used to build the label/description text, never to select which tracks belonged in a playlist. Fixed by computing `playlist_track_ids` alongside `label`/`description`: for `Trigger`/`Companion`/`Spiral`, only the tracks whose own classification equals the winning label; for `Locked`/`Exploration`/`Glimpse`, identical to `track_ids` (no per-track "qualifies" concept exists for session-native labels, so there's nothing to filter down to). `track_ids` and `track_count` are unchanged and still reflect the full session — so the plain "N tracks" line on `/analyze`'s card can now show a larger number than the playlist actually created from a Trigger/Companion/Spiral context contains. Not fixed as part of this change (wasn't in scope) — flagging so it isn't mistaken for a new bug.
+
 ## Verification Checklist
 - [ ] A session with a clear majority (e.g. 2 Companion + 1 Trigger, 67%) labels as the majority, with an accurate "`N` of `M`" evidence count
 - [ ] A session where the plurality winner covers less than 15% of distinct tracks falls through to `Locked`/`Exploration`, not the thin-signal label
@@ -144,3 +153,6 @@ def build_contexts(plays):
 - [ ] `track_features.py`'s `classify_track()` and the literal `"insufficient_data"` string it returns are unchanged — the Glimpse naming lives entirely in this module
 - [ ] Re-running all 12 real sessions from `listening_history.db` through `build_contexts()` after this change produces identical labels to before (confirmed 2026-09-19 — no real session's label changed, since none had the previously-mis-gated shape)
 - [ ] Every one of the 6 labels a session can receive has a non-empty `category_description` from `CATEGORY_DESCRIPTIONS` — a `KeyError` here means a label was added/renamed without updating the dict
+- [ ] For a `Trigger`/`Companion`/`Spiral` context, `len(playlist_track_ids)` equals the `count` in that context's own "N of M" description (e.g. "Trigger — 7 of 14" → `len(playlist_track_ids) == 7`), and every ID in it independently classifies as that same label
+- [ ] For a `Locked`/`Exploration`/`Glimpse` context, `playlist_track_ids == track_ids` exactly (no filtering applied)
+- [ ] `/create-playlist` is called with `playlist_track_ids`, not `track_ids` — a mocked round trip confirms the playlist actually created contains only the winning label's tracks for a Trigger/Companion/Spiral context

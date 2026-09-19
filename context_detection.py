@@ -113,7 +113,12 @@ def build_contexts(plays: list[dict]) -> list[dict]:
     Returns:
         List of context dicts, one per detected session:
         {context_id, label, description, category_description, track_ids,
-        track_count}.
+        playlist_track_ids, track_count}. `track_ids` is always the full
+        session's distinct tracks; `playlist_track_ids` is what a
+        playlist made from this context should actually contain -- only
+        the winning label's tracks for Trigger/Companion/Spiral, the same
+        as `track_ids` for Locked/Exploration/Glimpse (see Known
+        Limitations in context-detection/SKILL.md).
     """
     by_track: dict[str, list[dict]] = {}
     for p in plays:
@@ -148,6 +153,10 @@ def build_contexts(plays: list[dict]) -> list[dict]:
         if dominant is not None:
             label, count = dominant
             description = f"{label} — {count} of {distinct_track_count} tracks show this pattern."
+            # Only the tracks whose own classification matches the winning
+            # label -- not the whole session -- should end up in a playlist
+            # made from this context.
+            playlist_track_ids = [tid for tid in distinct_ids if classification_by_track[tid] == label]
         elif distinct_track_count >= MIN_DISTINCT_TRACKS_FOR_EVIDENCE:
             # No dominant qualifying track, but enough distinct tracks to
             # judge this session's own breadth -- independent of whether
@@ -155,6 +164,9 @@ def build_contexts(plays: list[dict]) -> list[dict]:
             fallback = _diversity_fallback(sess, distinct_track_count)
             label = fallback["label"]
             description = fallback["description"]
+            # Locked/Exploration have no per-track "qualifies" concept --
+            # the whole session is the answer, nothing to filter down to.
+            playlist_track_ids = distinct_ids
         else:
             # Too few distinct tracks to say anything about this session.
             label = "Glimpse"
@@ -162,6 +174,7 @@ def build_contexts(plays: list[dict]) -> list[dict]:
                 f"{distinct_track_count} tracks, none played more than once in "
                 "this window — a fleeting listening encounter."
             )
+            playlist_track_ids = distinct_ids
 
         contexts.append({
             "context_id": sess["session_id"],
@@ -169,6 +182,7 @@ def build_contexts(plays: list[dict]) -> list[dict]:
             "description": description,
             "category_description": CATEGORY_DESCRIPTIONS[label],
             "track_ids": distinct_ids,
+            "playlist_track_ids": playlist_track_ids,
             "track_count": distinct_track_count,
         })
 
