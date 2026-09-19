@@ -82,5 +82,23 @@
 - **Proposed, then rejected:**
   - A percentage-based "mostly insufficient_data" threshold for Glimpse — rejected in favor of the categorical rule, since it would need real-data calibration with no evidence to justify a specific number.
 
-  ## 2026-09-19
+## 2026-09-19
+- **Time spent:** ~11 hrs (real session span 02:30–13:43 IST, from local Claude Code transcript timestamps, excluding the portion already covered by Part B)
+- **Tokens used:** 437,388 output tokens (real, from the local session transcript — not an estimate)
+- **Shipped (implemented):**
+  - Fixed `Exploration`/`Locked` to no longer require a qualifying (Spiral/Trigger/Companion) track to exist in a session — previously a session with real breadth (many distinct tracks/artists, zero repeats) fell into `Glimpse` instead, indistinguishable from a single track played once. Added `MIN_DISTINCT_TRACKS_FOR_EVIDENCE` (provisional — no real multi-track, zero-repeat session exists yet to calibrate it) as the new gate. Verified via synthetic cases and a zero-regression check against all 12 real sessions.
+  - Renamed the `Block` category to `Locked` throughout code and Skills (historical `BUILD_LOG.md` entries left unchanged, as an accurate record of what it was called when built). Added `CATEGORY_DESCRIPTIONS` — short, human-voiced explanations of what each category means, shown on `/analyze` and passed through as the Spotify playlist's description field — then formalized as its own `category-descriptions` skill with voice/tone guidelines, kept separate from `context-detection`.
+  - Added a raw play/session-count summary line to `/analyze` ("Fetched N plays, spanning X to Y → grouped into M sessions") so a result's shape is visible directly, not just asserted.
+  - Replaced the single 50-play live fetch with pagination (up to 300 plays via Spotify's `before` cursor) — a 50-play window rarely contained enough repetition for Trigger/Companion/Spiral/Locked to fire and fragmented into too many tiny sessions.
+  - Added the Playlist Nomenclature skill (`playlist_naming.py`) as the single source of truth for a playlist's name — `"{Category} - {DD Mon YYYY}"` (literal hyphen, date = creation time, not listening time) — computed once per `/analyze` request and carried through a hidden form field to `/create-playlist` so the webpage card and the real Spotify playlist always show byte-for-byte the same name. Kept separate from the existing, untouched description-generation skill.
+  - **Deployment/testing:** Tested the deployed Railway version successfully, including Spotify authentication, analysis, context generation, and playlist creation. Confirmed the hosted app works end-to-end after the latest changes.
+- **Investigated:**
+  - Diagnosed two "duplicate category block" reports (Trigger, then Exploration) as expected per-session behavior — one context per detected session, not one per category — not a bug. Confirmed via code trace (no early-exit/filtering logic anywhere in the pipeline) and local synthetic reproduction matching the exact reported numbers.
+  - Diagnosed "/analyze shows only one category" as a consequence of the live fetch window being small/temporally clustered, not a classification or rendering defect.
+  - Considered switching `/analyze` to read from `listening_history.db` instead of a live fetch; found it would break multi-user isolation (every visitor would see the owner's personal data) and doesn't exist on Railway at all (gitignored, untracked) — this informed the pagination decision instead.
+  - Re-confirmed the earlier second-Spotify-account 500 fix (null-track guard) was genuinely committed and pushed; could not independently confirm Railway's live deployment state or logs (no CLI/API access from this environment).
+  - Recovered real historical time/token usage from the local Claude Code session transcript for BUILD_LOG purposes, rather than estimating.
+- **Decided:**
+  - Keep `/analyze` as a live, per-visitor fetch with no persistent database, even though it required extra work (pagination) to fix its real problem — preserves multi-user safety, which switching to a shared personal database would have broken.
+  - Playlist Nomenclature and Playlist Description Generation stay separate skills/responsibilities; a playlist's name is computed once and threaded through rather than reconstructed independently on the webpage and in the Spotify API call.
 
