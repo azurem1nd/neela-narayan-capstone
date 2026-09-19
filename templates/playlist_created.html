@@ -1,10 +1,15 @@
-<!doctype html>
-<html>
-<head><title>Playlist Created</title></head>
-<body>
-  <h1>Playlist Created</h1>
-  <p>"{{ result.name }}" — {{ result.track_count }} tracks.</p>
-  <p><a href="{{ result.playlist_url }}">Open on Spotify</a></p>
-  <p><a href="{{ url_for('analyze') }}">Back to your contexts</a></p>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Pressed — Untitled Vinyl Player{% endblock %}
+
+{% block content %}
+<section class="confirm">
+  <p class="kicker">Pressed</p>
+  <h1>{{ result.name }}</h1>
+  <p class="meta">{{ result.track_count }} track{{ 's' if result.track_count != 1 }}</p>
+  <div class="confirm__actions">
+    <a class="btn btn--solid" href="{{ result.playlist_url }}">Open on Spotify</a>
+    <a class="btn" href="{{ url_for('analyze') }}">Back to your contexts</a>
+  </div>
+</section>
+{% endblock %}

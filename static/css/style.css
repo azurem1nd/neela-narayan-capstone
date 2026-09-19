@@ -1,0 +1,356 @@
+/* Untitled Vinyl Player — record-label print system.
+   Palette and type are drawn from actual pressed vinyl: paper sleeve,
+   printed label ink, and the small monospace catalog/matrix numbers
+   stamped near a record's spindle hole. */
+
+:root {
+  --paper: #eae3d2;
+  --paper-warm: #e1d7c0;
+  --ink: #201c16;
+  --ink-soft: #59503f;
+  --rule: rgba(32, 28, 22, 0.16);
+  --vinyl: #17140f;
+  --vinyl-sheen: #2c2820;
+  --brass: #b8862f;
+  --brass-dark: #8f6a24;
+  --focus: #1c5fae;
+
+  --c-trigger: #a23e30;
+  --c-companion: #2c4f73;
+  --c-spiral: #6c3a62;
+  --c-locked: #55622e;
+  --c-exploration: #2b6b66;
+  --c-glimpse: #6e675a;
+
+  --font-serif: "Newsreader", ui-serif, Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #171310;
+    --paper-warm: #1f1a15;
+    --ink: #ece4d3;
+    --ink-soft: #b8ab90;
+    --rule: rgba(236, 228, 211, 0.16);
+    --vinyl: #0c0a08;
+    --vinyl-sheen: #221e18;
+    --brass: #d3a04a;
+    --brass-dark: #e6b862;
+    --focus: #6fa8dc;
+
+    --c-trigger: #d16a5a;
+    --c-companion: #6f9bc4;
+    --c-spiral: #a5749b;
+    --c-locked: #93a15c;
+    --c-exploration: #5ea39c;
+    --c-glimpse: #a39c8c;
+
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+a { color: inherit; }
+
+.page {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 4rem) 1.25rem clamp(3rem, 8vw, 6rem);
+}
+
+/* ---------- Hero / platter ---------- */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+  padding-top: clamp(1rem, 4vw, 3rem);
+  min-width: 0;
+}
+
+.hero > * {
+  max-width: 100%;
+}
+
+.platter {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  margin-bottom: 0.5rem;
+}
+
+.disc {
+  position: absolute;
+  inset: 8% 8% 8% 8%;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      var(--vinyl) 0px,
+      var(--vinyl) 3px,
+      var(--vinyl-sheen) 3px,
+      var(--vinyl-sheen) 4px
+    );
+  box-shadow:
+    0 20px 34px -18px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  animation: spin 5s linear infinite;
+  animation-play-state: paused;
+}
+
+.platter.is-playing .disc {
+  animation-play-state: running;
+}
+
+.disc__label {
+  position: absolute;
+  inset: 33%;
+  border-radius: 50%;
+  background: var(--brass);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.disc__label-text {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: var(--vinyl);
+}
+
+.disc__spindle {
+  position: absolute;
+  inset: 48%;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  z-index: 1;
+}
+
+.tonearm-base {
+  position: absolute;
+  top: -2%;
+  right: -6%;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+.tonearm-arm {
+  position: absolute;
+  top: 1%;
+  right: 3%;
+  width: 6px;
+  height: 132px;
+  border-radius: 4px;
+  background: linear-gradient(var(--ink-soft), var(--ink));
+  transform-origin: top center;
+  transform: rotate(-30deg);
+  transition: transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 1;
+}
+
+.tonearm-head {
+  position: absolute;
+  bottom: -4px;
+  left: -5px;
+  width: 16px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--ink);
+}
+
+.platter.is-playing .tonearm-arm {
+  transform: rotate(8deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disc { animation: none; }
+  .tonearm-arm { transition: none; }
+}
+
+.wordmark {
+  font-size: clamp(2.1rem, 5.5vw, 3.25rem);
+  font-style: italic;
+  font-weight: 600;
+  margin: 0;
+}
+
+.lede {
+  max-width: 34rem;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  display: inline-block;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  padding: 0.6rem 1.5rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.btn:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn--solid {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn--solid:hover {
+  background: var(--brass-dark);
+  border-color: var(--brass-dark);
+  color: var(--vinyl);
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Page header (contexts / confirm) ---------- */
+
+.page-header {
+  margin-bottom: 2.5rem;
+}
+
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: 0 0 0.35rem;
+}
+
+.page-header h1,
+.confirm h1 {
+  font-size: clamp(1.9rem, 4.5vw, 2.6rem);
+  font-style: italic;
+  margin: 0 0 0.5rem;
+}
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: 0;
+  overflow-wrap: break-word;
+}
+
+/* ---------- Context sleeves ---------- */
+
+.contexts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 1.5rem;
+}
+
+.sleeve {
+  --label-color: var(--brass);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  background: var(--paper-warm);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 1.6rem;
+}
+
+.sleeve[data-category="Trigger"] { --label-color: var(--c-trigger); }
+.sleeve[data-category="Companion"] { --label-color: var(--c-companion); }
+.sleeve[data-category="Spiral"] { --label-color: var(--c-spiral); }
+.sleeve[data-category="Locked"] { --label-color: var(--c-locked); }
+.sleeve[data-category="Exploration"] { --label-color: var(--c-exploration); }
+.sleeve[data-category="Glimpse"] { --label-color: var(--c-glimpse); }
+
+.sleeve__label-chip {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: var(--label-color);
+  box-shadow:
+    inset 0 0 0 5px var(--paper-warm),
+    inset 0 0 0 6px var(--rule);
+}
+
+.sleeve__title {
+  font-size: 1.5rem;
+  font-style: italic;
+  margin: 0;
+  color: var(--label-color);
+}
+
+.sleeve__catalog {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin: -0.5rem 0 0;
+}
+
+.sleeve__voice {
+  margin: 0;
+}
+
+.sleeve__evidence {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.sleeve form {
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.empty {
+  color: var(--ink-soft);
+  max-width: 30rem;
+}
+
+/* ---------- Confirmation ---------- */
+
+.confirm {
+  max-width: 32rem;
+}
+
+.confirm__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}

@@ -1,30 +1,36 @@
-<!doctype html>
-<html>
-<head><title>Untitled Vinyl Player</title></head>
-<body>
-  <h1>Untitled Vinyl Player</h1>
-  <p>Connected as {{ display_name }}. Your listening contexts:</p>
+{% extends "base.html" %}
 
+{% block title %}Your listening contexts — Untitled Vinyl Player{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <p class="kicker">Connected as {{ display_name }}</p>
+  <h1>Your listening contexts</h1>
   {% if total_plays %}
-    <p><small>Fetched {{ total_plays }} plays, spanning {{ first_played }} to {{ last_played }} → grouped into {{ session_count }} session{{ 's' if session_count != 1 }}.</small></p>
+    <p class="meta">{{ total_plays }} plays, {{ first_played }} to {{ last_played }} → {{ session_count }} session{{ 's' if session_count != 1 }}</p>
   {% else %}
-    <p><small>Fetched 0 plays.</small></p>
+    <p class="meta">0 plays fetched</p>
   {% endif %}
+</header>
 
+{% if contexts %}
+<div class="contexts-grid">
   {% for context in contexts %}
-    <div>
-      <h2>{{ context.label }}</h2>
-      <p><strong>{{ context.playlist_name }}</strong></p>
-      <p>{{ context.category_description }}</p>
-      <p>{{ context.description }}</p>
-      <form method="post" action="{{ url_for('create_playlist_route') }}">
-        <input type="hidden" name="context_id" value="{{ context.context_id }}">
-        <input type="hidden" name="playlist_name" value="{{ context.playlist_name }}">
-        <button type="submit">Create Spotify playlist</button>
-      </form>
-    </div>
-  {% else %}
-    <p>No listening contexts found yet — play some music on Spotify and check back.</p>
+  <article class="sleeve" data-category="{{ context.label }}">
+    <div class="sleeve__label-chip" aria-hidden="true"></div>
+    <h2 class="sleeve__title">{{ context.label }}</h2>
+    <p class="sleeve__catalog">{{ context.playlist_name }}</p>
+    <p class="sleeve__voice">{{ context.category_description }}</p>
+    <p class="sleeve__evidence">{{ context.description }}</p>
+    <form method="post" action="{{ url_for('create_playlist_route') }}">
+      <input type="hidden" name="context_id" value="{{ context.context_id }}">
+      <input type="hidden" name="playlist_name" value="{{ context.playlist_name }}">
+      <button type="submit" class="btn">Create Spotify playlist</button>
+    </form>
+  </article>
   {% endfor %}
-</body>
-</html>
+</div>
+{% else %}
+  <p class="empty">Nothing pressed yet — play some music on Spotify and check back.</p>
+{% endif %}
+{% endblock %}

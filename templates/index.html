@@ -1,15 +1,24 @@
-<!doctype html>
-<html>
-<head><title>Untitled Vinyl Player</title></head>
-<body>
-  <h1>Untitled Vinyl Player</h1>
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <div class="platter{{ ' is-playing' if logged_in else '' }}" aria-hidden="true">
+    <div class="tonearm-base"></div>
+    <div class="tonearm-arm"><span class="tonearm-head"></span></div>
+    <div class="disc">
+      <div class="disc__label"><span class="disc__label-text">UVP</span></div>
+      <div class="disc__spindle"></div>
+    </div>
+  </div>
+
+  <h1 class="wordmark">Untitled Vinyl Player</h1>
 
   {% if logged_in %}
-    <p>Connected as {{ display_name }}.</p>
-    <a href="{{ url_for('analyze') }}">Analyze my listening</a>
+    <p class="lede">Connected as {{ display_name }}.</p>
+    <a class="btn btn--solid" href="{{ url_for('analyze') }}">Find my listening contexts</a>
   {% else %}
-    <p>Finds the listening contexts hidden in your Spotify history.</p>
-    <a href="{{ url_for('login') }}">Connect Spotify</a>
+    <p class="lede">It finds the shapes hiding in how you actually listen — the song you played on repeat for a day and dropped, the one you never really stopped playing.</p>
+    <a class="btn btn--solid" href="{{ url_for('login') }}">Connect Spotify</a>
   {% endif %}
-</body>
-</html>
+</section>
+{% endblock %}
