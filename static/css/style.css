@@ -405,6 +405,18 @@ a { color: inherit; }
   transform: translateY(0.05em) rotate(2deg);
 }
 
+.landing-page .turntable-3d {
+  width: clamp(240px, 46vw, 400px);
+  aspect-ratio: 1 / 1;
+  margin: 0.5rem auto 0;
+}
+
+.landing-page .turntable-3d canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .landing-page .connected-line {
   font-family: var(--font-mono);
   font-size: 1rem;
