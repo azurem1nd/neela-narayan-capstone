@@ -39,10 +39,23 @@
   <div class="lib-cards" id="lib-cards">
     {% for context in contexts %}
     {% set visual = CARD_VISUALS.get(context.label, {'number': loop.index, 'title': context.label|upper, 'corner': 'dots', 'artwork': true, 'squiggle': 'full'}) %}
+    {#- The whole card -- footer included -- is ONE tilting composition:
+       daisyUI's hover-3d only allows non-interactive content inside
+       its wrapper, so per its own documented pattern for clickable
+       cards ("wrap the entire component in an anchor"), the card's
+       first-child IS the link/submit button itself, with the footer
+       as plain inert content inside it rather than a separate
+       interactive element bolted on below. -#}
     <article class="lib-card-wrapper" data-index="{{ loop.index0 }}" data-category="{{ context.label }}">
-      <div class="ctx-card-frame">
+      {% if context.playlist_url %}
+      <a href="{{ context.playlist_url }}" target="_blank" rel="noopener" class="ctx-card-frame" aria-label="{{ visual.title }} -- open this playlist on Spotify">
+      {% else %}
+      <form method="post" action="{{ url_for('create_playlist_route') }}" class="ctx-card-frame">
+        <input type="hidden" name="context_id" value="{{ context.context_id }}">
+        <input type="hidden" name="playlist_name" value="{{ context.playlist_name or '' }}">
+      {% endif %}
         <div class="hover-3d">
-          <div class="ctx-card">
+          <{{ 'span' if context.playlist_url else 'button' }} class="ctx-card"{% if not context.playlist_url %} type="submit" aria-label="{{ visual.title }} -- create this playlist on Spotify"{% endif %}>
             {% if visual.squiggle == 'thin' %}{{ squiggle_thin() }}{% else %}{{ squiggle_full() }}{% endif %}
             {% if visual.corner == 'dots' %}{{ dots() }}
             {% elif visual.corner == 'checker' %}{{ checker_wave(context.context_id) }}
@@ -50,53 +63,44 @@
             {% elif visual.corner == 'curves' %}{{ curved_stripes() }}
             {% endif %}
 
-            <div class="ctx-card__header">
+            <span class="ctx-card__header">
               <span class="ctx-card__number">{{ visual.number }}</span>
-              <div class="ctx-card__heading">
-                <h2 class="ctx-card__title">{{ visual.title }}</h2>
-                <p class="ctx-card__meta-row">
+              <span class="ctx-card__heading">
+                <span class="ctx-card__title">{{ visual.title }}</span>
+                <span class="ctx-card__meta-row">
                   <span>{{ today_display }}</span>
                   <span>{{ context.track_count if context.track_count is not none else 0 }} track{{ 's' if context.track_count != 1 }}</span>
-                </p>
-              </div>
-            </div>
+                </span>
+              </span>
+            </span>
 
-            <p class="ctx-card__desc">{{ context.category_description or "No description available for this one yet." }}</p>
+            <span class="ctx-card__desc">{{ context.category_description or "No description available for this one yet." }}</span>
 
             {% if visual.artwork %}
-            <div class="ctx-card__artwork">
+            <span class="ctx-card__artwork">
               {% if context.playlist_image %}
                 <img src="{{ context.playlist_image }}" alt="" loading="lazy">
               {% else %}
-                <div class="ctx-card__artwork-fallback" role="img" aria-label="No playlist cover yet -- press play to create this playlist">
+                <span class="ctx-card__artwork-fallback">
                   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                </div>
+                </span>
               {% endif %}
-            </div>
+            </span>
             {% endif %}
-          </div>
+
+            <span class="ctx-card__footer">
+              <svg class="ctx-card__spotify-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M6.5 9.5c3-1 8-.7 10.5.8M6.8 12.6c2.5-.8 6.7-.5 9 .8M7.2 15.5c2-.6 5.3-.4 7.2.7" stroke="var(--tr-bg)" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>
+              <span>SPOTIFY.COM/TRACKRECORD</span>
+            </span>
+          </{{ 'span' if context.playlist_url else 'button' }}>
           <div></div><div></div><div></div><div></div>
           <div></div><div></div><div></div><div></div>
         </div>
-
-        {% if context.playlist_url %}
-        <a href="{{ context.playlist_url }}" target="_blank" rel="noopener" class="ctx-card__footer ctx-card__footer--link">
-          <span class="ctx-card__spotify-btn" aria-label="Open this playlist on Spotify">
-            <svg class="ctx-card__spotify-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M6.5 9.5c3-1 8-.7 10.5.8M6.8 12.6c2.5-.8 6.7-.5 9 .8M7.2 15.5c2-.6 5.3-.4 7.2.7" stroke="var(--tr-bg)" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>
-            <span>SPOTIFY.COM/TRACKRECORD</span>
-          </span>
-        </a>
-        {% else %}
-        <form method="post" action="{{ url_for('create_playlist_route') }}" class="ctx-card__footer">
-          <input type="hidden" name="context_id" value="{{ context.context_id }}">
-          <input type="hidden" name="playlist_name" value="{{ context.playlist_name or '' }}">
-          <button type="submit" class="ctx-card__spotify-btn" aria-label="Create this playlist on Spotify">
-            <svg class="ctx-card__spotify-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M6.5 9.5c3-1 8-.7 10.5.8M6.8 12.6c2.5-.8 6.7-.5 9 .8M7.2 15.5c2-.6 5.3-.4 7.2.7" stroke="var(--tr-bg)" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>
-            <span>SPOTIFY.COM/TRACKRECORD</span>
-          </button>
-        </form>
-        {% endif %}
-      </div>
+      {% if context.playlist_url %}
+      </a>
+      {% else %}
+      </form>
+      {% endif %}
     </article>
     {% endfor %}
   </div>
