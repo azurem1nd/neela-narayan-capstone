@@ -345,22 +345,22 @@ a { color: inherit; }
 /* ---------- Landing page (Track Record) ----------
    Scoped under .landing-page so the rest of the app keeps its
    existing vinyl/print identity. Palette + type per design brief:
-   base #FFF8E7, app-name blue #260FC1, accent pink #F253AD.
+   base #FFF8E7, app-name blue #260FC1, accent pink #F253AD. */
 
-   NOTE ON "Elastic": the brief calls for the Elastic typeface for
-   the wordmark. Elastic (Displaay Type Foundry) is a commercial
-   variable font, not available via Google Fonts / a free CDN, so it
-   is NOT installed here. Substituted with Gluten — a Google Font
-   explicitly designed with the same stretchy/elastic letterforms —
-   as the closest available open alternative. Swap --font-elastic
-   below if a licensed copy of Elastic is added to the project. */
+@font-face {
+  font-family: 'Elastic';
+  src: url('/static/fonts/Elastic.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 
 .landing-page {
   --tr-bg: #FFF8E7;
   --tr-blue: #260FC1;
   --tr-pink: #F253AD;
   --tr-ink: #1a1610;
-  --font-elastic: "Gluten", "Fredoka", var(--font-serif);
+  --font-elastic: "Elastic", "Gluten", "Fredoka", var(--font-serif);
   --font-ui: "Inter", "Circular Std", -apple-system, BlinkMacSystemFont, sans-serif;
 
   background: var(--tr-bg);
