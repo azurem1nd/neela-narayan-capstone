@@ -594,9 +594,7 @@ a { color: inherit; }
   text-transform: uppercase;
   font-size: clamp(1.75rem, 5vw, 3rem);
   line-height: 1;
-  color: var(--tr-blue);
-  -webkit-text-stroke: 1.5px #000;
-  paint-order: stroke fill;
+  color: var(--tr-ink);
   margin: 0 0 0.5rem;
 }
 
