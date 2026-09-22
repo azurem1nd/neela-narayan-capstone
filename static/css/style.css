@@ -623,7 +623,8 @@ a { color: inherit; }
   line-height: 1.6;
   color: var(--tr-ink);
   max-width: 32rem;
-  margin: 0;
+  margin: 0 auto;
+  text-align: center;
 }
 
 /* ---- Stage / view modes ---- */
@@ -769,7 +770,7 @@ a { color: inherit; }
   line-height: 1.5;
   color: var(--tr-ink);
   max-width: 80%;
-  margin: 5.5cqw 0 0;
+  margin: 5.5cqw auto 0;
   text-align: center;
 }
 
