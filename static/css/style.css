@@ -375,16 +375,20 @@ a { color: inherit; }
 }
 
 .landing-page .hero {
-  gap: 1.25rem;
-  padding-top: clamp(2rem, 8vw, 5rem);
+  gap: 1.75rem;
+  padding-top: clamp(2.5rem, 9vw, 5.5rem);
 }
 
+/* Poster-energy pass: bigger, tighter headline type and more
+   deliberate scale contrast against body text -- tonal reference
+   only (type scale / spacing rhythm), no copied assets, colors, or
+   layout. See conversation for the reference images. */
 .landing-page .wordmark {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(2.75rem, 11vw, 6rem);
-  line-height: 1;
-  letter-spacing: 0.01em;
+  font-size: clamp(3.25rem, 13vw, 7.5rem);
+  line-height: 0.86;
+  letter-spacing: -0.01em;
   color: var(--tr-blue);
   text-transform: uppercase;
   font-style: normal;
@@ -392,7 +396,7 @@ a { color: inherit; }
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0 0.5em;
+  gap: 0 0.2em;
 }
 
 .wordmark__word span {
@@ -422,11 +426,19 @@ a { color: inherit; }
   font-family: var(--font-ui);
   color: var(--tr-ink);
   max-width: 100%;
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
 }
 
 .landing-page .btn {
   font-family: var(--font-ui);
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.9rem 2.25rem;
   border-color: var(--tr-blue);
   color: var(--tr-blue);
 }
@@ -457,7 +469,7 @@ a { color: inherit; }
   width: 100%;
   overflow: hidden;
   background: var(--tr-pink);
-  padding: 0.65rem 0;
+  padding: 0.85rem 0;
   z-index: 10;
 }
 
@@ -471,9 +483,9 @@ a { color: inherit; }
   display: inline-block;
   white-space: nowrap;
   font-family: var(--font-mono);
-  font-weight: 500;
-  font-size: 0.95rem;
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
   color: var(--tr-blue);
 }
 
