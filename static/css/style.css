@@ -506,13 +506,23 @@ a { color: inherit; }
    base.html's <head> -- no new font-face/link needed. */
 
 .library-page {
-  --tr-bg: #FFF8E7;
+  /* Card canvas colors, pixel-sampled from the six reference designs
+     (see conversation) -- exact, not approximated. */
+  --tr-bg: #EEEFE9;
+  --tr-ink: #1D1D1D;
   --tr-blue: #260FC1;
   --tr-pink: #F253AD;
-  --tr-ink: #1a1610;
   --font-display: "Unbounded", sans-serif;
   --font-ui: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Per-category accent colors, sampled from each reference card. */
+  --ctx-companion: #FE4833;
+  --ctx-trigger: #BEE860;
+  --ctx-locked: #9591F8;
+  --ctx-spiral: #CFB23C;
+  --ctx-exploration: #BEE860;
+  --ctx-glimpse: #9892FC;
 
   background: var(--tr-bg);
   color: var(--tr-ink);
@@ -613,7 +623,7 @@ a { color: inherit; }
 
 .lib-stage[data-view="multi"] .lib-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
   gap: 1.75rem;
   align-items: stretch;
 }
@@ -629,87 +639,277 @@ a { color: inherit; }
 .lib-card-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1rem;
   width: 100%;
-  max-width: 22rem;
+  max-width: 24rem;
+  /* Establishes the cqw unit used throughout the card so every
+     element scales together, proportional to the CARD's own width
+     (not the viewport) -- correct in both single view and a
+     multi-view grid column of any width. */
+  container-type: inline-size;
 }
 
 .lib-card-wrapper[hidden] {
   display: none;
 }
 
-/* ---- Card content (non-interactive -- lives inside .hover-3d) ---- */
+.lib-stage[data-view="multi"] .lib-card-wrapper {
+  max-width: none;
+}
 
-.lib-card {
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  background: var(--tr-bg);
-  border: 3px solid var(--tr-blue);
-  border-radius: 1.25rem;
-  padding: 1.5rem;
+/* ==== Context card (poster design, ported from the six reference
+   frames). Proportions below are derived from pixel-measuring those
+   712x920 reference canvases (see conversation), expressed in cqw so
+   the whole composition scales as one unit. The wrapper's own
+   aspect-ratio reserves room for both the tilting card body and the
+   footer band below it (90.2% / 9.8% of the reference canvas). ==== */
+
+.ctx-card-frame {
+  aspect-ratio: 712 / 920;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  box-shadow: 6px 6px 0 var(--tr-pink);
 }
 
-.lib-card__meta {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--tr-pink);
-  margin: 0;
+.ctx-card-frame .hover-3d {
+  flex: 1;
+  min-height: 0;
 }
 
-.lib-card__title {
+.ctx-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--tr-bg);
+  border: 1px solid var(--tr-ink);
+  border-bottom: none;
+  padding: 5cqw 5cqw 3cqw;
+  display: flex;
+  flex-direction: column;
+  color: var(--tr-ink);
+}
+
+.ctx-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5cqw;
+  position: relative;
+  z-index: 1;
+}
+
+.ctx-card__number {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 27cqw;
+  line-height: 0.78;
+  color: var(--ctx-accent, var(--tr-blue));
+  -webkit-text-stroke: 0.18cqw var(--tr-ink);
+  paint-order: stroke fill;
+  margin: -1cqw 0 0 -2cqw;
+}
+
+.ctx-card__heading {
+  padding-top: 8cqw;
+  min-width: 0;
+}
+
+.ctx-card__title {
   font-family: var(--font-display);
   font-weight: 800;
   text-transform: uppercase;
-  font-size: clamp(1.15rem, 3.4vw, 1.5rem);
-  line-height: 1.08;
-  color: var(--tr-blue);
-  margin: 0;
-}
-
-.lib-card__desc {
-  font-family: var(--font-mono);
-  font-size: 0.88rem;
-  line-height: 1.45;
+  font-size: 8.2cqw;
+  line-height: 1;
   color: var(--tr-ink);
   margin: 0;
-  overflow-y: auto;
 }
 
-.lib-card__play-form {
-  margin: 0;
-}
-
-.library-page .btn {
-  font-family: var(--font-ui);
+.ctx-card__meta-row {
+  display: flex;
+  gap: 3.5cqw;
+  margin: 1.6cqw 0 0;
+  font-family: var(--font-mono);
   font-weight: 700;
-  border-color: var(--tr-blue);
-  color: var(--tr-blue);
+  font-size: 3.6cqw;
+  color: var(--tr-ink);
 }
 
-.library-page .btn--solid {
-  background: var(--tr-pink);
-  border-color: var(--tr-pink);
-  color: var(--tr-bg);
+.ctx-card__desc {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 3.4cqw;
+  line-height: 1.5;
+  color: var(--tr-ink);
+  max-width: 80%;
+  margin: 5.5cqw 0 0;
 }
 
-.library-page .btn--solid:hover {
-  background: var(--tr-blue);
-  border-color: var(--tr-blue);
-  color: var(--tr-bg);
+.ctx-card__artwork {
+  position: relative;
+  z-index: 1;
+  width: 48.6%;
+  aspect-ratio: 1;
+  margin: 5cqw auto 0;
+  border: 1px solid var(--tr-ink);
+  overflow: hidden;
+  background: var(--ctx-accent, var(--tr-blue));
 }
 
-.library-page .lib-card__play-btn {
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  padding: 0.7rem 2rem;
+.ctx-card__artwork img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
+
+.ctx-card__artwork-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ctx-card__artwork-fallback svg {
+  width: 40%;
+  height: 40%;
+  color: var(--tr-ink);
+  opacity: 0.55;
+}
+
+/* Category graphic accents -- absolutely positioned, colored via
+   currentColor from --ctx-accent, clipped to the card's bounds by
+   the card's own overflow:hidden. */
+
+.ctx-card__graphic {
+  position: absolute;
+  color: var(--ctx-accent, var(--tr-blue));
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ctx-card__graphic--dots {
+  top: 0;
+  right: 0;
+  width: 40cqw;
+  height: auto;
+}
+
+.ctx-card__graphic--dots circle {
+  fill: currentColor;
+}
+
+.ctx-card__graphic--checker {
+  top: 0;
+  right: 0;
+  width: 17cqw;
+  height: 62cqw;
+  color: var(--ctx-accent, var(--tr-blue));
+}
+
+.ctx-card__graphic--checker rect {
+  fill: currentColor;
+}
+
+.ctx-card__graphic--stripes {
+  right: 0;
+  bottom: 12cqw;
+  width: 20cqw;
+  height: 20cqw;
+}
+
+.ctx-card__graphic--stripes rect {
+  fill: currentColor;
+}
+
+.ctx-card__graphic--curves {
+  right: -2cqw;
+  bottom: 10cqw;
+  width: 28cqw;
+  height: 28cqw;
+}
+
+.ctx-card__graphic--squiggle {
+  color: var(--tr-ink);
+}
+
+.ctx-card__graphic--squiggle-full {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 34cqw;
+}
+
+.ctx-card__graphic--squiggle-thin {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 30cqw;
+}
+
+/* ---- Footer band: outside .hover-3d (interactive content only
+   belongs there per daisyUI's own docs), but same container-query
+   context so it still scales with the card, and borders/background
+   make it read as one continuous poster with the card above it. ---- */
+
+.ctx-card__footer {
+  display: block;
+  margin: 0;
+  border: 1px solid var(--tr-ink);
+  border-top: none;
+  background: var(--tr-bg);
+  padding: 2.2cqw 5cqw;
+  text-decoration: none;
+}
+
+.ctx-card__spotify-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 3.4cqw;
+  letter-spacing: 0.02em;
+  color: var(--tr-ink);
+  text-align: left;
+}
+
+.ctx-card__spotify-icon {
+  flex-shrink: 0;
+  width: 8.5cqw;
+  height: 8.5cqw;
+  color: var(--tr-ink);
+}
+
+.ctx-card__spotify-btn:hover,
+.ctx-card__spotify-btn:focus-visible {
+  color: var(--ctx-accent, var(--tr-blue));
+}
+
+.ctx-card__spotify-btn:hover .ctx-card__spotify-icon,
+.ctx-card__spotify-btn:focus-visible .ctx-card__spotify-icon {
+  color: var(--ctx-accent, var(--tr-blue));
+}
+
+.ctx-card__spotify-btn:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+/* ---- Per-category accent wiring ---- */
+
+.lib-card-wrapper[data-category="Companion"] { --ctx-accent: var(--ctx-companion); }
+.lib-card-wrapper[data-category="Trigger"] { --ctx-accent: var(--ctx-trigger); }
+.lib-card-wrapper[data-category="Locked"] { --ctx-accent: var(--ctx-locked); }
+.lib-card-wrapper[data-category="Spiral"] { --ctx-accent: var(--ctx-spiral); }
+.lib-card-wrapper[data-category="Exploration"] { --ctx-accent: var(--ctx-exploration); }
+.lib-card-wrapper[data-category="Glimpse"] { --ctx-accent: var(--ctx-glimpse); }
 
 /* ---- Single-card navigation ---- */
 
@@ -750,8 +950,18 @@ a { color: inherit; }
   font-size: 0.85rem;
   color: var(--tr-ink);
   margin: 0;
-  min-width: 3.5rem;
+  min-width: 7rem;
   text-align: center;
+}
+
+.lib-single-nav__count #lib-position-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.lib-single-nav__count #lib-position {
+  opacity: 0.7;
 }
 
 /* ---- hover-3d (ported from daisyUI v5, https://daisyui.com/components/hover-3d/)

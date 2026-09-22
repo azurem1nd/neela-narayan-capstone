@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_card_graphics.html" import dots, checker_wave, stripes_br, curved_stripes, squiggle_full, squiggle_thin %}
 
 {% block title %}My Music Library — Track Record{% endblock %}
 
@@ -21,31 +22,88 @@
 </header>
 
 {% if contexts %}
+{#- Visual configuration per category -- separate from the context
+   DATA above it. Number, accent token, graphic treatment, and
+   whether this category shows the central artwork square all come
+   from the six reference card designs, not from context_detection.py
+   (which owns label/description/track_count only). -#}
+{% set CARD_VISUALS = {
+  'Companion':   {'number': 3, 'title': 'COMPANION', 'corner': 'stripes', 'artwork': true,  'squiggle': 'full'},
+  'Trigger':     {'number': 1, 'title': 'TRIGGER',   'corner': 'dots',    'artwork': false, 'squiggle': 'full'},
+  'Locked':      {'number': 2, 'title': 'LOCKED',    'corner': 'checker', 'artwork': true,  'squiggle': 'full'},
+  'Spiral':      {'number': 4, 'title': 'SPIRAL',    'corner': 'dots',    'artwork': true,  'squiggle': 'full'},
+  'Exploration': {'number': 5, 'title': 'EXPLORE',   'corner': 'curves',  'artwork': true,  'squiggle': 'full'},
+  'Glimpse':     {'number': 6, 'title': 'GLIMPSE',   'corner': 'checker', 'artwork': true,  'squiggle': 'thin'},
+} %}
 <div class="lib-stage" id="lib-stage" data-view="single">
   <div class="lib-cards" id="lib-cards">
     {% for context in contexts %}
-    <article class="lib-card-wrapper" data-index="{{ loop.index0 }}">
-      <div class="hover-3d">
-        <div class="lib-card">
-          <p class="lib-card__meta">{{ today_display }} &middot; {{ context.track_count if context.track_count is not none else 0 }} track{{ 's' if context.track_count != 1 }}</p>
-          <h2 class="lib-card__title">{{ context.playlist_name or (context.label ~ " session") }}</h2>
-          <p class="lib-card__desc">{{ context.category_description or "No description available for this one yet." }}</p>
+    {% set visual = CARD_VISUALS.get(context.label, {'number': loop.index, 'title': context.label|upper, 'corner': 'dots', 'artwork': true, 'squiggle': 'full'}) %}
+    <article class="lib-card-wrapper" data-index="{{ loop.index0 }}" data-category="{{ context.label }}">
+      <div class="ctx-card-frame">
+        <div class="hover-3d">
+          <div class="ctx-card">
+            {% if visual.squiggle == 'thin' %}{{ squiggle_thin() }}{% else %}{{ squiggle_full() }}{% endif %}
+            {% if visual.corner == 'dots' %}{{ dots() }}
+            {% elif visual.corner == 'checker' %}{{ checker_wave(context.context_id) }}
+            {% elif visual.corner == 'stripes' %}{{ stripes_br() }}
+            {% elif visual.corner == 'curves' %}{{ curved_stripes() }}
+            {% endif %}
+
+            <div class="ctx-card__header">
+              <span class="ctx-card__number">{{ visual.number }}</span>
+              <div class="ctx-card__heading">
+                <h2 class="ctx-card__title">{{ visual.title }}</h2>
+                <p class="ctx-card__meta-row">
+                  <span>{{ today_display }}</span>
+                  <span>{{ context.track_count if context.track_count is not none else 0 }} track{{ 's' if context.track_count != 1 }}</span>
+                </p>
+              </div>
+            </div>
+
+            <p class="ctx-card__desc">{{ context.category_description or "No description available for this one yet." }}</p>
+
+            {% if visual.artwork %}
+            <div class="ctx-card__artwork">
+              {% if context.playlist_image %}
+                <img src="{{ context.playlist_image }}" alt="" loading="lazy">
+              {% else %}
+                <div class="ctx-card__artwork-fallback" role="img" aria-label="No playlist cover yet -- press play to create this playlist">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                </div>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+          <div></div><div></div><div></div><div></div>
+          <div></div><div></div><div></div><div></div>
         </div>
-        <div></div><div></div><div></div><div></div>
-        <div></div><div></div><div></div><div></div>
+
+        {% if context.playlist_url %}
+        <a href="{{ context.playlist_url }}" target="_blank" rel="noopener" class="ctx-card__footer ctx-card__footer--link">
+          <span class="ctx-card__spotify-btn" aria-label="Open this playlist on Spotify">
+            <svg class="ctx-card__spotify-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M6.5 9.5c3-1 8-.7 10.5.8M6.8 12.6c2.5-.8 6.7-.5 9 .8M7.2 15.5c2-.6 5.3-.4 7.2.7" stroke="var(--tr-bg)" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>
+            <span>SPOTIFY.COM/TRACKRECORD</span>
+          </span>
+        </a>
+        {% else %}
+        <form method="post" action="{{ url_for('create_playlist_route') }}" class="ctx-card__footer">
+          <input type="hidden" name="context_id" value="{{ context.context_id }}">
+          <input type="hidden" name="playlist_name" value="{{ context.playlist_name or '' }}">
+          <button type="submit" class="ctx-card__spotify-btn" aria-label="Create this playlist on Spotify">
+            <svg class="ctx-card__spotify-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M6.5 9.5c3-1 8-.7 10.5.8M6.8 12.6c2.5-.8 6.7-.5 9 .8M7.2 15.5c2-.6 5.3-.4 7.2.7" stroke="var(--tr-bg)" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>
+            <span>SPOTIFY.COM/TRACKRECORD</span>
+          </button>
+        </form>
+        {% endif %}
       </div>
-      <form method="post" action="{{ url_for('create_playlist_route') }}" class="lib-card__play-form">
-        <input type="hidden" name="context_id" value="{{ context.context_id }}">
-        <input type="hidden" name="playlist_name" value="{{ context.playlist_name }}">
-        <button type="submit" class="btn btn--solid lib-card__play-btn">▶ play</button>
-      </form>
     </article>
     {% endfor %}
   </div>
 
   <div class="lib-single-nav" id="lib-single-nav">
     <button type="button" class="lib-nav-btn" id="lib-prev" aria-label="Previous card">‹ prev</button>
-    <p class="lib-single-nav__count" id="lib-position">1 / {{ contexts|length }}</p>
+    <p class="lib-single-nav__count"><span id="lib-position-label"></span> <span id="lib-position">1 / {{ contexts|length }}</span></p>
     <button type="button" class="lib-nav-btn" id="lib-next" aria-label="Next card">next ›</button>
   </div>
 </div>

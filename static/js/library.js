@@ -11,6 +11,7 @@
   const prevBtn = document.getElementById('lib-prev');
   const nextBtn = document.getElementById('lib-next');
   const positionLabel = document.getElementById('lib-position');
+  const categoryLabel = document.getElementById('lib-position-label');
   const viewButtons = Array.from(document.querySelectorAll('[data-view-btn]'));
 
   let currentIndex = 0;
@@ -23,6 +24,9 @@
     });
     if (positionLabel) {
       positionLabel.textContent = `${currentIndex + 1} / ${cards.length}`;
+    }
+    if (categoryLabel && cards[currentIndex]) {
+      categoryLabel.textContent = cards[currentIndex].dataset.category;
     }
     if (prevBtn) prevBtn.disabled = currentIndex === 0;
     if (nextBtn) nextBtn.disabled = currentIndex === cards.length - 1;
