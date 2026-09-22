@@ -770,8 +770,10 @@ a { color: inherit; }
 
 .ctx-card__heading {
   display: block;
+  flex: 1;
   padding-top: 8cqw;
   min-width: 0;
+  text-align: center;
 }
 
 .ctx-card__title {
@@ -787,6 +789,7 @@ a { color: inherit; }
 
 .ctx-card__meta-row {
   display: flex;
+  justify-content: center;
   gap: 3.5cqw;
   margin: 1.6cqw 0 0;
   font-family: var(--font-mono);
