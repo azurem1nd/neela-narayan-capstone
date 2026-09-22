@@ -421,7 +421,7 @@ a { color: inherit; }
 .landing-page .lede {
   font-family: var(--font-ui);
   color: var(--tr-ink);
-  max-width: 30rem;
+  max-width: 100%;
 }
 
 .landing-page .btn {
