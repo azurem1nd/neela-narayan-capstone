@@ -755,6 +755,7 @@ a { color: inherit; }
   color: var(--tr-ink);
   max-width: 80%;
   margin: 5.5cqw 0 0;
+  text-align: center;
 }
 
 .ctx-card__artwork {
