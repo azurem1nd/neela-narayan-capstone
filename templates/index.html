@@ -38,10 +38,11 @@
   {% endif %}
 </section>
 
+{% set ticker_phrase = 'connected to your spotify ★' if logged_in else 'connect to your spotify ★' %}
 <div class="ticker" aria-hidden="true">
   <div class="ticker__track">
-    <span class="ticker__seq">{% for i in range(15) %}connect to your spotify ★ {% endfor %}</span>
-    <span class="ticker__seq">{% for i in range(15) %}connect to your spotify ★ {% endfor %}</span>
+    <span class="ticker__seq">{% for i in range(15) %}{{ ticker_phrase }} {% endfor %}</span>
+    <span class="ticker__seq">{% for i in range(15) %}{{ ticker_phrase }} {% endfor %}</span>
   </div>
 </div>
 {% endblock %}
