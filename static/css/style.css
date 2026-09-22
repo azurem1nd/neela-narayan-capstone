@@ -506,9 +506,12 @@ a { color: inherit; }
    base.html's <head> -- no new font-face/link needed. */
 
 .library-page {
-  /* Card canvas colors, pixel-sampled from the six reference designs
-     (see conversation) -- exact, not approximated. */
-  --tr-bg: #EEEFE9;
+  /* Card canvas color, exact per the six reference designs -- do not
+     approximate. The page background is a deliberately different,
+     subtly toned-down paper so the card still reads as a distinct
+     object sitting on it, not the same surface. */
+  --tr-bg: #F0F0EB;
+  --tr-page-bg: #E7E7E1;
   --tr-ink: #1D1D1D;
   --tr-blue: #260FC1;
   --tr-pink: #F253AD;
@@ -524,7 +527,7 @@ a { color: inherit; }
   --ctx-exploration: #BEE860;
   --ctx-glimpse: #9591F8;
 
-  background: var(--tr-bg);
+  background: var(--tr-page-bg);
   color: var(--tr-ink);
   font-family: var(--font-ui);
 }
