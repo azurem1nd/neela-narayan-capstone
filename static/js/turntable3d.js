@@ -1,7 +1,12 @@
-/* Track Record — 3D chrome turntable hero graphic.
-   Static when logged out, begins a slow continuous spin once the
-   session is connected (driven by the `data-spinning` attribute the
-   template sets from the same `logged_in` flag used everywhere else). */
+/* Track Record — 3D turntable hero graphic.
+   Disc surface is a realistic reflective/prismatic finish (rainbow
+   diffraction streaks over a silver base, glossy clearcoat) modeled
+   after a burned CD's iridescent look — physically-based iridescence
+   plus an art-directed streak texture, not the brushed-metal/chrome
+   treatment used for the platter and tonearm. Static when logged
+   out, begins a slow continuous spin once the session is connected
+   (driven by the `data-spinning` attribute the template sets from
+   the same `logged_in` flag used everywhere else). */
 
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -16,22 +21,58 @@ if (container && window.WebGLRenderingContext) {
   }
 }
 
-function makeGrooveTexture() {
-  const size = 512;
+// Art-directed disc surface: silver base + fine radiating rainbow
+// streaks (diffraction-like, per the burncd.app reference) plus faint
+// concentric micro-grooves for sparkle. Combined at render time with
+// MeshPhysicalMaterial's physical `iridescence` for a real angle-
+// dependent shimmer on top of the baked pattern.
+function makeIridescentDiscTexture() {
+  const size = 1024;
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = size;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#0b0b0d';
-  ctx.fillRect(0, 0, size, size);
   const cx = size / 2;
   const cy = size / 2;
-  for (let r = size * 0.14; r < size * 0.495; r += 2.4) {
+  const R = size * 0.5;
+
+  const base = ctx.createRadialGradient(cx, cy, R * 0.12, cx, cy, R);
+  base.addColorStop(0, '#e8ebee');
+  base.addColorStop(1, '#a8adb5');
+  ctx.fillStyle = base;
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.fill();
+
+  const streakCount = 260;
+  for (let i = 0; i < streakCount; i++) {
+    const angle = (i / streakCount) * Math.PI * 2 + Math.random() * 0.02;
+    const hue = (i * 53) % 360;
+    const innerR = R * (0.16 + Math.random() * 0.06);
+    const outerR = R * (0.74 + Math.random() * 0.25);
+    const x0 = cx + Math.cos(angle) * innerR;
+    const y0 = cy + Math.sin(angle) * innerR;
+    const x1 = cx + Math.cos(angle) * outerR;
+    const y1 = cy + Math.sin(angle) * outerR;
+    const grad = ctx.createLinearGradient(x0, y0, x1, y1);
+    grad.addColorStop(0, `hsla(${hue}, 95%, 62%, 0)`);
+    grad.addColorStop(0.5, `hsla(${hue}, 100%, 60%, 0.7)`);
+    grad.addColorStop(1, `hsla(${(hue + 45) % 360}, 95%, 62%, 0)`);
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 1.2 + Math.random() * 2.6;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+  }
+
+  for (let r = R * 0.2; r < R * 0.98; r += 1.6) {
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(255, 255, 255, ${(r % 7.2 < 3.6) ? 0.06 : 0.025})`;
+    ctx.strokeStyle = `rgba(255, 255, 255, ${(r % 6 < 3) ? 0.05 : 0.02})`;
     ctx.lineWidth = 1;
     ctx.stroke();
   }
+
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
   return tex;
@@ -63,17 +104,24 @@ function initTurntable(container) {
   const ambient = new THREE.AmbientLight(0xffffff, 0.35);
   scene.add(ambient);
 
-  const key = new THREE.DirectionalLight(0xffffff, 1.6);
+  const key = new THREE.DirectionalLight(0xffffff, 2.0);
   key.position.set(3, 5.5, 4);
   scene.add(key);
 
-  const rim = new THREE.PointLight(0xbcd6ff, 1.2, 24);
+  const rim = new THREE.PointLight(0xbcd6ff, 0.5, 18);
   rim.position.set(-4, 2, -3);
   scene.add(rim);
 
-  const warm = new THREE.PointLight(0xfff1d6, 0.7, 24);
+  const warm = new THREE.PointLight(0xfff1d6, 0.3, 18);
   warm.position.set(2.5, -1, 3.5);
   scene.add(warm);
+
+  // Third color pulled from the brand accent, positioned as a tight
+  // glint so it adds a magenta note to the highlights without
+  // tinting the whole disc surface.
+  const accent = new THREE.PointLight(0xf253ad, 0.4, 14);
+  accent.position.set(-2, -1.5, 4);
+  scene.add(accent);
 
   const chrome = new THREE.MeshPhysicalMaterial({
     color: 0xdadde1,
@@ -89,11 +137,16 @@ function initTurntable(container) {
     roughness: 0.36,
   });
 
-  const vinylMat = new THREE.MeshStandardMaterial({
-    color: 0x0e0e10,
-    metalness: 0.25,
-    roughness: 0.42,
-    map: makeGrooveTexture(),
+  const discMat = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff,
+    map: makeIridescentDiscTexture(),
+    metalness: 0.65,
+    roughness: 0.1,
+    iridescence: 0.4,
+    iridescenceIOR: 1.3,
+    iridescenceThicknessRange: [180, 480],
+    clearcoat: 1,
+    clearcoatRoughness: 0.04,
   });
 
   const labelMat = new THREE.MeshPhysicalMaterial({
@@ -120,10 +173,10 @@ function initTurntable(container) {
   spinGroup.position.y = -0.08;
   rig.add(spinGroup);
 
-  const disc = new THREE.Mesh(new THREE.CylinderGeometry(1.78, 1.78, 0.04, 72), vinylMat);
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(1.78, 1.78, 0.04, 72), discMat);
   spinGroup.add(disc);
 
-  const label = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.52, 0.05, 48), labelMat);
+  const label = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.05, 48), labelMat);
   label.position.y = 0.005;
   spinGroup.add(label);
 

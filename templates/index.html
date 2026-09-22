@@ -15,7 +15,7 @@
     <p class="connected-line">connected to {{ display_name }}</p>
     <a class="btn btn--solid" href="{{ url_for('analyze') }}">see my library</a>
   {% else %}
-    <p class="lede">Track Record finds the patterns hiding in your listening history — the songs tied to a place, a mood, a phase — and turns them into collections you can actually revisit, instead of letting them get buried under whatever's new.</p>
+    <p class="lede">TRACK RECORD finds the patterns hiding in your listening history — the songs tied to a place, a mood, a phase — and turns them into playlists you can actually revisit.</p>
     <a class="btn btn--solid" href="{{ url_for('login') }}">Connect Spotify</a>
   {% endif %}
 
@@ -24,15 +24,14 @@
     id="turntable-3d"
     data-spinning="{{ 'true' if logged_in else 'false' }}"
     role="img"
-    aria-label="A chrome record player, {{ 'spinning' if logged_in else 'idle, waiting to connect' }}"
+    aria-label="A record player with an iridescent disc, {{ 'spinning' if logged_in else 'idle, waiting to connect' }}"
   ></div>
 </section>
 
-{% set ticker_phrase = ('connected to your spotify @' ~ display_name ~ ' ★') if logged_in else 'connect to spotify' %}
 <div class="ticker" aria-hidden="true">
   <div class="ticker__track">
-    <span class="ticker__seq">{% for i in range(15) %}{{ ticker_phrase }}   {% endfor %}</span>
-    <span class="ticker__seq">{% for i in range(15) %}{{ ticker_phrase }}   {% endfor %}</span>
+    <span class="ticker__seq">{% for i in range(15) %}connect to your spotify ★ {% endfor %}</span>
+    <span class="ticker__seq">{% for i in range(15) %}connect to your spotify ★ {% endfor %}</span>
   </div>
 </div>
 {% endblock %}
