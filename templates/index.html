@@ -6,55 +6,39 @@
 
 {% block content %}
 <section class="hero">
-  <h1 class="wordmark" aria-label="Track Record">
-    <span class="wordmark__word" aria-hidden="true"><span>T</span><span>R</span><span>A</span><span>C</span><span>K</span></span>
-    <span class="wordmark__word" aria-hidden="true"><span>R</span><span>E</span><span>C</span><span>O</span><span>R</span><span>D</span></span>
-  </h1>
+  <button
+    type="button"
+    class="wordmark-block"
+    id="wordmark-toggle"
+    aria-expanded="false"
+    aria-controls="about-panel"
+  >
+    <h1 class="wordmark">TRACK RECORD</h1>
+  </button>
 
-  {% if logged_in %}
-    <p class="connected-line">connected to {{ display_name }}</p>
-    <a class="btn btn--solid" href="{{ url_for('analyze') }}">my music library</a>
-  {% else %}
-    <p class="lede">TRACK RECORD finds the patterns hiding in your listening history — the songs tied to a place, a mood, a phase — and turns them into playlists you can actually revisit.</p>
-    <a class="btn btn--solid" href="{{ url_for('login') }}">Connect Spotify</a>
-  {% endif %}
+  <div class="landing-panels">
+    {% if logged_in %}
+      <a class="subtitle-link" id="subtitle-panel" href="{{ url_for('analyze') }}">your music library</a>
+    {% else %}
+      <a class="subtitle-link" id="subtitle-panel" href="{{ url_for('login') }}">connect to spotify</a>
+    {% endif %}
 
-  {% if logged_in %}
-    <a
-      href="{{ url_for('analyze') }}"
-      class="turntable-3d"
-      id="turntable-3d"
-      data-spinning="true"
-      aria-label="A record player with an iridescent disc, spinning — my music library"
-    ></a>
-  {% else %}
-    <div
-      class="turntable-3d"
-      id="turntable-3d"
-      data-spinning="false"
-      role="img"
-      aria-label="A record player with an iridescent disc, idle, waiting to connect"
-    ></div>
-  {% endif %}
+    <p class="about-panel" id="about-panel" hidden>TRACK RECORD finds the patterns hiding in your listening history — the songs tied to a place, a mood, a phase — and turns them into playlists you can actually revisit</p>
+  </div>
 </section>
 
-{% set ticker_phrase = 'connected to your spotify ★' if logged_in else 'connect to your spotify ★' %}
+{% set handle = (' @' ~ display_name) if display_name else '' %}
+{% set verb = 'connected' if logged_in else 'connect' %}
+{% set long_phrase = verb ~ ' to your spotify' ~ handle %}
+{% set short_phrase = verb ~ ' to your spotify' %}
 <div class="ticker" aria-hidden="true">
   <div class="ticker__track">
-    <span class="ticker__seq">{% for i in range(15) %}{{ ticker_phrase }} {% endfor %}</span>
-    <span class="ticker__seq">{% for i in range(15) %}{{ ticker_phrase }} {% endfor %}</span>
+    <span class="ticker__seq">{% for i in range(15) %}{{ long_phrase }} ★ {{ short_phrase }} ★ {% endfor %}</span>
+    <span class="ticker__seq">{% for i in range(15) %}{{ long_phrase }} ★ {{ short_phrase }} ★ {% endfor %}</span>
   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-  }
-}
-</script>
-<script type="module" src="{{ url_for('static', filename='js/turntable3d.js') }}"></script>
+<script src="{{ url_for('static', filename='js/landing.js') }}" defer></script>
 {% endblock %}

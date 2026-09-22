@@ -343,32 +343,22 @@ a { color: inherit; }
 }
 
 /* ---------- Landing page (Track Record) ----------
-   Scoped under .landing-page so the rest of the app keeps its
-   existing vinyl/print identity. Palette + type per design brief:
-   base #FFF8E7, app-name blue #260FC1, accent pink #F253AD. */
-
-@font-face {
-  font-family: 'Elastic';
-  src: url('/static/fonts/Elastic.otf') format('opentype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Unbounded';
-  src: url('/static/fonts/Unbounded-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+   Rebuilt to match the three supplied reference frames (disconnected
+   / connected / about) as closely as practical -- composition,
+   proportions, and exact colors verified by pixel-sampling those
+   references, not approximated:
+     base #F0F0EB, green highlight #BEE860, pink ticker #E57BA1,
+     primary text #292929, divider #260FC1 (sampled from the
+     reference's footer rule -- happens to match the blue already
+     used elsewhere in this app, so it's reused, not a new color). */
 
 .landing-page {
-  --tr-bg: #FFF8E7;
+  --tr-bg: #F0F0EB;
+  --tr-green: #BEE860;
+  --tr-pink: #E57BA1;
+  --tr-ink: #292929;
   --tr-blue: #260FC1;
-  --tr-pink: #F253AD;
-  --tr-ink: #1a1610;
-  --font-display: "Unbounded", "Elastic", sans-serif;
+  --font-display: "Unbounded", sans-serif;
   --font-ui: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   /* Overrides the site-wide mono token (IBM Plex Mono) for this subtree only. */
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -379,117 +369,97 @@ a { color: inherit; }
 }
 
 .landing-page .page {
-  padding-bottom: clamp(4rem, 10vw, 5rem);
+  /* Clears the fixed ticker + its divider border. */
+  padding-bottom: clamp(5rem, 12vw, 6.5rem);
 }
 
 .landing-page .hero {
-  gap: 1.25rem;
-  padding-top: clamp(2rem, 6vw, 3.5rem);
+  align-items: center;
+  text-align: center;
+  gap: 0;
+  padding-top: clamp(2.5rem, 7.5vw, 5rem);
 }
 
-/* Poster-energy pass: bigger, tighter headline type and more
-   deliberate scale contrast against body text -- tonal reference
-   only (type scale / spacing rhythm), no copied assets, colors, or
-   layout. See conversation for the reference images. */
+/* ---- Wordmark: text sitting inside a tight-fit green highlight block,
+   sized to the text (not a fixed-width bar) -- matches the reference,
+   where all three states show the identical block. Doubles as the
+   toggle into the About panel. ---- */
+
+.landing-page .wordmark-block {
+  display: inline-block;
+  background: var(--tr-green);
+  padding: clamp(0.85rem, 1.7vw, 1.4rem) clamp(0.9rem, 1.8vw, 1.5rem);
+  border: none;
+  margin: 0;
+  cursor: pointer;
+  font: inherit;
+  max-width: 100%;
+}
+
 .landing-page .wordmark {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(2.25rem, 7vw, 4.5rem);
-  line-height: 0.86;
-  letter-spacing: -0.01em;
-  color: var(--tr-blue);
-  -webkit-text-stroke: 2px #000;
-  paint-order: stroke fill;
-  text-transform: uppercase;
+  font-weight: 800;
   font-style: normal;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0 0.2em;
-}
-
-.wordmark__word span {
-  display: inline-block;
-}
-
-.landing-page .turntable-3d {
-  /* Smallest of a px cap, a viewport-width share, and a viewport-height
-     share -- keeps the (square) graphic, plus the headline/button
-     stack above it, from ever overflowing the visible viewport. */
-  width: min(320px, 40vw, 42vh);
-  aspect-ratio: 1 / 1;
-  margin: 0.5rem auto 0;
-}
-
-.landing-page .turntable-3d canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.landing-page a.turntable-3d {
-  display: block;
-  cursor: pointer;
-  transition: transform 220ms ease, filter 220ms ease;
-}
-
-.landing-page a.turntable-3d:hover,
-.landing-page a.turntable-3d:focus-visible {
-  transform: scale(1.035);
-  filter: drop-shadow(0 0 20px rgba(242, 83, 173, 0.45));
-}
-
-.landing-page a.turntable-3d:focus-visible {
-  outline: 3px solid var(--tr-blue);
-  outline-offset: 6px;
-}
-
-.landing-page .connected-line {
-  font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: clamp(1.5rem, 7vw, 6.5rem);
+  line-height: 0.94;
+  letter-spacing: -0.01em;
   color: var(--tr-ink);
-  margin: 0;
-}
-
-.landing-page .lede {
-  font-family: var(--font-ui);
-  color: var(--tr-ink);
-  max-width: 100%;
-  font-size: 1.1rem;
-  font-weight: 500;
-  line-height: 1.4;
-  letter-spacing: 0.01em;
-}
-
-.landing-page .btn {
-  font-family: var(--font-ui);
-  font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.05em;
   text-transform: uppercase;
-  padding: 0.9rem 2.25rem;
-  border-color: var(--tr-blue);
-  color: var(--tr-blue);
+  margin: 0;
+  white-space: nowrap;
 }
 
-.landing-page .btn--solid {
-  background: var(--tr-pink);
-  border-color: var(--tr-pink);
-  color: var(--tr-bg);
+.landing-page .wordmark-block:hover .wordmark,
+.landing-page .wordmark-block:focus-visible .wordmark {
+  opacity: 0.85;
 }
 
-.landing-page .btn--solid:hover {
-  background: var(--tr-blue);
-  border-color: var(--tr-blue);
-  color: var(--tr-bg);
+.landing-page .wordmark-block:focus-visible {
+  outline: 3px solid var(--tr-blue);
+  outline-offset: 4px;
 }
 
-.landing-page .btn:focus-visible {
-  outline-color: var(--tr-blue);
+/* ---- Panels: subtitle link (default) or the About paragraph,
+   toggled by clicking the wordmark -- two states of one system,
+   never both visible at once. ---- */
+
+.landing-page .landing-panels {
+  margin-top: clamp(1.25rem, 2.5vw, 2.25rem);
+  padding: 0 1.25rem;
 }
 
-/* ---------- Bottom ticker (marquee) ---------- */
+.landing-page .subtitle-link {
+  display: inline-block;
+  font-family: var(--font-ui);
+  font-size: clamp(1.1rem, 2.6vw, 1.8rem);
+  color: var(--tr-ink);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: border-color 150ms ease;
+}
+
+.landing-page .subtitle-link[hidden],
+.landing-page .about-panel[hidden] {
+  display: none;
+}
+
+.landing-page .subtitle-link:hover,
+.landing-page .subtitle-link:focus-visible {
+  border-color: var(--tr-ink);
+}
+
+.landing-page .about-panel {
+  font-family: var(--font-ui);
+  font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+  line-height: 1.6;
+  color: var(--tr-ink);
+  max-width: 46rem;
+  margin: 0 auto;
+}
+
+/* ---------- Bottom ticker (marquee) ----------
+   border-top doubles as the reference's thin divider line, so it
+   always sits flush against the ticker regardless of its height. */
 
 .landing-page .ticker {
   position: fixed;
@@ -497,9 +467,12 @@ a { color: inherit; }
   right: 0;
   bottom: 0;
   width: 100%;
+  min-height: clamp(3.25rem, 8vw, 4.5rem);
+  display: flex;
+  align-items: center;
   overflow: hidden;
   background: var(--tr-pink);
-  padding: 0.85rem 0;
+  border-top: 4px solid var(--tr-blue);
   z-index: 10;
 }
 
@@ -513,10 +486,10 @@ a { color: inherit; }
   display: inline-block;
   white-space: nowrap;
   font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.04em;
-  color: var(--tr-blue);
+  font-weight: 500;
+  font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+  letter-spacing: 0.02em;
+  color: var(--tr-bg);
 }
 
 @keyframes ticker-scroll {
