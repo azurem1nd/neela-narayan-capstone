@@ -390,6 +390,8 @@ a { color: inherit; }
   line-height: 0.86;
   letter-spacing: -0.01em;
   color: var(--tr-blue);
+  -webkit-text-stroke: 2px #000;
+  paint-order: stroke fill;
   text-transform: uppercase;
   font-style: normal;
   margin: 0;
