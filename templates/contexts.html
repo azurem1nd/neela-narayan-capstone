@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_card_graphics.html" import dots, checker_wave, stripes_br, curved_stripes, squiggle_full, squiggle_thin %}
+{% from "_card_graphics.html" import dots, checker_wave, stripes_br, curved_stripes, squiggle %}
 
 {% block title %}My Music Library — Track Record{% endblock %}
 
@@ -28,17 +28,17 @@
    from the six reference card designs, not from context_detection.py
    (which owns label/description/track_count only). -#}
 {% set CARD_VISUALS = {
-  'Companion':   {'number': 3, 'title': 'COMPANION', 'corner': 'stripes', 'artwork': true,  'squiggle': 'full'},
-  'Trigger':     {'number': 1, 'title': 'TRIGGER',   'corner': 'dots',    'artwork': false, 'squiggle': 'full'},
-  'Locked':      {'number': 2, 'title': 'LOCKED',    'corner': 'checker', 'artwork': true,  'squiggle': 'full'},
-  'Spiral':      {'number': 4, 'title': 'SPIRAL',    'corner': 'dots',    'artwork': true,  'squiggle': 'full'},
-  'Exploration': {'number': 5, 'title': 'EXPLORE',   'corner': 'curves',  'artwork': true,  'squiggle': 'full'},
-  'Glimpse':     {'number': 6, 'title': 'GLIMPSE',   'corner': 'checker', 'artwork': true,  'squiggle': 'thin'},
+  'Companion':   {'number': 3, 'title': 'COMPANION', 'corner': 'stripes', 'artwork': true},
+  'Trigger':     {'number': 1, 'title': 'TRIGGER',   'corner': 'dots',    'artwork': false},
+  'Locked':      {'number': 2, 'title': 'LOCKED',    'corner': 'checker', 'artwork': true},
+  'Spiral':      {'number': 4, 'title': 'SPIRAL',    'corner': 'dots',    'artwork': true},
+  'Exploration': {'number': 5, 'title': 'EXPLORE',   'corner': 'curves',  'artwork': true},
+  'Glimpse':     {'number': 6, 'title': 'GLIMPSE',   'corner': 'checker', 'artwork': true},
 } %}
 <div class="lib-stage" id="lib-stage" data-view="single">
   <div class="lib-cards" id="lib-cards">
     {% for context in contexts %}
-    {% set visual = CARD_VISUALS.get(context.label, {'number': loop.index, 'title': context.label|upper, 'corner': 'dots', 'artwork': true, 'squiggle': 'full'}) %}
+    {% set visual = CARD_VISUALS.get(context.label, {'number': loop.index, 'title': context.label|upper, 'corner': 'dots', 'artwork': true}) %}
     {#- The whole card -- footer included -- is ONE tilting composition:
        daisyUI's hover-3d only allows non-interactive content inside
        its wrapper, so per its own documented pattern for clickable
@@ -56,7 +56,7 @@
       {% endif %}
         <div class="hover-3d">
           <{{ 'span' if context.playlist_url else 'button' }} class="ctx-card"{% if not context.playlist_url %} type="submit" aria-label="{{ visual.title }} -- create this playlist on Spotify"{% endif %}>
-            {% if visual.squiggle == 'thin' %}{{ squiggle_thin() }}{% else %}{{ squiggle_full() }}{% endif %}
+            {{ squiggle() }}
             {% if visual.corner == 'dots' %}{{ dots() }}
             {% elif visual.corner == 'checker' %}{{ checker_wave(context.context_id) }}
             {% elif visual.corner == 'stripes' %}{{ stripes_br() }}

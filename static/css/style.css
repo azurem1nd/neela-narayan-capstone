@@ -844,20 +844,10 @@ a { color: inherit; }
 
 .ctx-card__graphic--squiggle {
   color: var(--tr-ink);
-}
-
-.ctx-card__graphic--squiggle-full {
   left: 0;
   bottom: 0;
   width: 100%;
-  height: 34cqw;
-}
-
-.ctx-card__graphic--squiggle-thin {
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 30cqw;
+  height: auto;
 }
 
 /* ---- Footer: inert decorative content, part of the same tilting
