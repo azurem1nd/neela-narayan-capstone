@@ -355,12 +355,20 @@ a { color: inherit; }
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Unbounded';
+  src: url('/static/fonts/Unbounded-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 .landing-page {
   --tr-bg: #FFF8E7;
   --tr-blue: #260FC1;
   --tr-pink: #F253AD;
   --tr-ink: #1a1610;
-  --font-display: "Elastic", "Unbounded", sans-serif;
+  --font-display: "Unbounded", "Elastic", sans-serif;
   --font-ui: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   /* Overrides the site-wide mono token (IBM Plex Mono) for this subtree only. */
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -385,7 +393,7 @@ a { color: inherit; }
    layout. See conversation for the reference images. */
 .landing-page .wordmark {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 400;
   font-size: clamp(2.25rem, 7vw, 4.5rem);
   line-height: 0.86;
   letter-spacing: -0.01em;
