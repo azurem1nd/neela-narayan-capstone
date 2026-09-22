@@ -884,13 +884,10 @@ a { color: inherit; }
   width: 100%;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 2.5cqw;
   margin-top: auto;
   padding-top: 3cqw;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 3.4cqw;
-  letter-spacing: 0.02em;
   color: var(--tr-ink);
 }
 
@@ -899,6 +896,17 @@ a { color: inherit; }
   width: 8.5cqw;
   height: 8.5cqw;
   color: var(--tr-ink);
+}
+
+/* Real vector-traced "SPOTIFY.COM/TRACKRECORD" wordmark, sized to its
+   own true scale relative to the 712-wide reference card and pushed
+   to the right edge of the footer row (space-between above), while
+   still sitting on the same bottom footer as the Spotify icon. */
+.ctx-card__wordmark {
+  display: block;
+  width: 64.47cqw;
+  height: auto;
+  color: inherit;
 }
 
 /* Hover/focus affordance lives on the card as a whole -- a plain

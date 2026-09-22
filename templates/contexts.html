@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_card_graphics.html" import squiggle, companion_graphic, trigger_graphic, locked_graphic, spiral_graphic, explore_graphic, glimpse_graphic, locked_scribble, spiral_scribble %}
+{% from "_card_graphics.html" import squiggle, companion_graphic, trigger_graphic, locked_graphic, spiral_graphic, explore_graphic, glimpse_graphic, locked_scribble, spiral_scribble, trackrecord_wordmark %}
 
 {% block title %}My Music Library — Track Record{% endblock %}
 
@@ -89,7 +89,7 @@
 
             <span class="ctx-card__footer">
               <svg class="ctx-card__spotify-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M6.5 9.5c3-1 8-.7 10.5.8M6.8 12.6c2.5-.8 6.7-.5 9 .8M7.2 15.5c2-.6 5.3-.4 7.2.7" stroke="var(--tr-bg)" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>
-              <span>SPOTIFY.COM/TRACKRECORD</span>
+              {{ trackrecord_wordmark() }}
             </span>
           </span>
           <div></div><div></div><div></div><div></div>
