@@ -12,7 +12,10 @@
 
   <div class="landing-panels">
     {% if logged_in %}
-      <a class="subtitle-link" href="{{ url_for('analyze') }}">your music library</a>
+      <span class="library-cta">
+        <a class="subtitle-link" href="{{ url_for('analyze') }}">your music library</a>
+        <span class="library-cta__caption">a library built from your listening habits</span>
+      </span>
     {% else %}
       <p class="about-panel">TRACK RECORD finds the patterns hiding in your listening history — the songs tied to a place, a mood, a phase — and turns them into playlists you can actually revisit</p>
       <a class="subtitle-link" href="{{ url_for('login') }}">connect to spotify</a>

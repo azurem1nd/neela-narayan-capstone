@@ -432,6 +432,30 @@ a { color: inherit; }
   border-color: var(--tr-ink);
 }
 
+/* "your music library" CTA: a smaller caption revealed on hover/focus,
+   below the link, reserving its own space so nothing shifts when it
+   appears. */
+.landing-page .library-cta {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.landing-page .library-cta__caption {
+  font-family: var(--font-ui);
+  font-size: clamp(0.75rem, 1.4vw, 0.95rem);
+  color: var(--tr-ink);
+  opacity: 0;
+  transition: opacity 150ms ease;
+  pointer-events: none;
+}
+
+.landing-page .library-cta:hover .library-cta__caption,
+.landing-page .library-cta:has(.subtitle-link:focus-visible) .library-cta__caption {
+  opacity: 1;
+}
+
 .landing-page .about-panel {
   font-family: var(--font-ui);
   font-size: clamp(0.9rem, 1.6vw, 1.05rem);
