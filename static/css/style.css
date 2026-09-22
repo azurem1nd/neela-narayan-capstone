@@ -465,6 +465,15 @@ a { color: inherit; }
   margin: 0;
 }
 
+/* ---- Decorative record-crate illustration, shared by both screens. ---- */
+
+.landing-page .landing-illustration {
+  display: block;
+  width: clamp(9rem, 22vw, 15rem);
+  height: auto;
+  margin-top: clamp(1.5rem, 4vw, 3rem);
+}
+
 /* ---------- Bottom ticker (marquee) ----------
    border-top doubles as the reference's thin divider line, so it
    always sits flush against the ticker regardless of its height. */
