@@ -508,8 +508,8 @@ a { color: inherit; }
 .library-page {
   /* Card canvas colors, pixel-sampled from the six reference designs
      (see conversation) -- exact, not approximated. */
-  --tr-bg: #EEEFE9;
-  --tr-ink: #1D1D1D;
+  --tr-bg: #292929;
+  --tr-ink: #EEEFE9;
   --tr-blue: #260FC1;
   --tr-pink: #F253AD;
   --font-display: "Unbounded", sans-serif;
