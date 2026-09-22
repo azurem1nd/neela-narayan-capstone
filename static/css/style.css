@@ -614,6 +614,18 @@ a { color: inherit; }
   max-width: 30rem;
 }
 
+/* ---- Context detail page (navigation target only, for now --
+   no playback/Spotify action lives here yet) ---- */
+
+.ctx-detail__description {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--tr-ink);
+  max-width: 32rem;
+  margin: 0;
+}
+
 /* ---- Stage / view modes ---- */
 
 .lib-cards {
@@ -971,9 +983,10 @@ a { color: inherit; }
    Pure CSS, 9 grid children required: the card (:first-child) plus 8
    empty hover-zone divs. Colors are theme-neutral (white glare,
    black-tinted drop-shadow) so it reads correctly over any card
-   background. Interactive content (the play button) intentionally
-   lives outside this wrapper, per daisyUI's own documented
-   constraint that only non-interactive content should go inside. */
+   background. Per daisyUI's own documented constraint, only
+   non-interactive content goes inside this wrapper -- the card's
+   :first-child is an inert span; the actual link is the .ctx-card-frame
+   that wraps the whole wrapper from outside. */
 
 .hover-3d {
   perspective: 75rem;

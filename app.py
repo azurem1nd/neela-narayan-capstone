@@ -146,6 +146,42 @@ def analyze():
     )
 
 
+@app.route("/context/<context_id>")
+def context_detail(context_id):
+    """Dedicated page for one specific context/playlist card.
+
+    Re-fetches and re-derives contexts fresh, same as /create-playlist --
+    this app has no persistence, so a context is only ever known by
+    recomputing it from the user's current listening history and looking
+    up the id the card linked to (see context-detection/SKILL.md Known
+    Limitation #3). No playback/Spotify action happens here yet -- just
+    the context's own already-computed data.
+    """
+    sp = get_spotify_client()
+    if sp is None:
+        return redirect(url_for("index"))
+
+    me = sp.current_user()
+    plays = fetch_recent_plays(sp)
+    contexts = consolidate_by_category(build_contexts(plays))
+
+    match = next((c for c in contexts if c["context_id"] == context_id), None)
+    if match is None:
+        # Listening data changed since the card was viewed -- fall back
+        # to a fresh library view rather than a broken detail page.
+        return redirect(url_for("analyze"))
+
+    now = datetime.now(timezone.utc)
+    match["playlist_name"] = generate_playlist_name(match["label"], now)
+
+    return render_template(
+        "context_detail.html",
+        display_name=me.get("display_name") or me["id"],
+        context=match,
+        today_display=now.strftime("%d %b %Y"),
+    )
+
+
 @app.route("/create-playlist", methods=["POST"])
 def create_playlist_route():
     sp = get_spotify_client()

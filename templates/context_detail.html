@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}{{ context.label }} — Track Record{% endblock %}
+
+{% block body_class %}library-page{% endblock %}
+
+{% block content %}
+<div class="lib-topbar">
+  <a class="lib-back" href="{{ url_for('analyze') }}">← back to library</a>
+</div>
+
+<header class="lib-header">
+  <h1 class="lib-header__title">{{ context.label|lower }}</h1>
+  <p class="lib-header__meta">{{ today_display }} · {{ context.track_count if context.track_count is not none else 0 }} track{{ 's' if context.track_count != 1 }}</p>
+</header>
+
+<section class="ctx-detail">
+  <p class="ctx-detail__description">{{ context.category_description or "No description available for this one yet." }}</p>
+</section>
+{% endblock %}

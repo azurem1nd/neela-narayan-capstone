@@ -39,23 +39,17 @@
   <div class="lib-cards" id="lib-cards">
     {% for context in contexts %}
     {% set visual = CARD_VISUALS.get(context.label, {'number': loop.index, 'title': context.label|upper, 'artwork': true}) %}
-    {#- The whole card -- footer included -- is ONE tilting composition:
-       daisyUI's hover-3d only allows non-interactive content inside
-       its wrapper, so per its own documented pattern for clickable
-       cards ("wrap the entire component in an anchor"), the card's
-       first-child IS the link/submit button itself, with the footer
-       as plain inert content inside it rather than a separate
-       interactive element bolted on below. -#}
+    {#- The whole card -- footer included -- is ONE tilting composition,
+       AND the entire clickable surface: the outer <a> wraps the whole
+       .hover-3d (so hovering tilts everything together as one designed
+       poster, per daisyUI's own documented pattern for clickable
+       hover-3d cards -- "wrap the entire component in an anchor"),
+       navigating to this context's own detail page. Its first child is
+       an inert <span>, not a second interactive element. -#}
     <article class="lib-card-wrapper" data-index="{{ loop.index0 }}" data-category="{{ context.label }}">
-      {% if context.playlist_url %}
-      <a href="{{ context.playlist_url }}" target="_blank" rel="noopener" class="ctx-card-frame" aria-label="{{ visual.title }} -- open this playlist on Spotify">
-      {% else %}
-      <form method="post" action="{{ url_for('create_playlist_route') }}" class="ctx-card-frame">
-        <input type="hidden" name="context_id" value="{{ context.context_id }}">
-        <input type="hidden" name="playlist_name" value="{{ context.playlist_name or '' }}">
-      {% endif %}
+      <a href="{{ url_for('context_detail', context_id=context.context_id) }}" class="ctx-card-frame" aria-label="{{ visual.title }} -- view this context">
         <div class="hover-3d">
-          <{{ 'span' if context.playlist_url else 'button' }} class="ctx-card"{% if not context.playlist_url %} type="submit" aria-label="{{ visual.title }} -- create this playlist on Spotify"{% endif %}>
+          <span class="ctx-card">
             {% if context.label == 'Locked' %}{{ locked_scribble() }}
             {% elif context.label == 'Spiral' %}{{ spiral_scribble() }}
             {% else %}{{ squiggle() }}
@@ -97,15 +91,11 @@
               <svg class="ctx-card__spotify-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M6.5 9.5c3-1 8-.7 10.5.8M6.8 12.6c2.5-.8 6.7-.5 9 .8M7.2 15.5c2-.6 5.3-.4 7.2.7" stroke="var(--tr-bg)" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>
               <span>SPOTIFY.COM/TRACKRECORD</span>
             </span>
-          </{{ 'span' if context.playlist_url else 'button' }}>
+          </span>
           <div></div><div></div><div></div><div></div>
           <div></div><div></div><div></div><div></div>
         </div>
-      {% if context.playlist_url %}
       </a>
-      {% else %}
-      </form>
-      {% endif %}
     </article>
     {% endfor %}
   </div>
