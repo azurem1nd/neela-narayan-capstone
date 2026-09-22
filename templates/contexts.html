@@ -1,36 +1,59 @@
 {% extends "base.html" %}
 
-{% block title %}Your listening contexts — Untitled Vinyl Player{% endblock %}
+{% block title %}My Music Library — Track Record{% endblock %}
+
+{% block body_class %}library-page{% endblock %}
 
 {% block content %}
-<header class="page-header">
-  <p class="kicker">Connected as {{ display_name }}</p>
-  <h1>Your listening contexts</h1>
-  {% if total_plays %}
-    <p class="meta">{{ total_plays }} plays, {{ first_played }} to {{ last_played }} → {{ session_count }} session{{ 's' if session_count != 1 }}</p>
-  {% else %}
-    <p class="meta">0 plays fetched</p>
+<div class="lib-topbar">
+  <a class="lib-back" href="{{ url_for('index') }}">← back</a>
+  {% if contexts %}
+  <div class="lib-view-toggle" role="group" aria-label="View mode">
+    <button type="button" class="lib-view-toggle__btn is-active" data-view-btn="single">single</button>
+    <button type="button" class="lib-view-toggle__btn" data-view-btn="multi">grid</button>
+  </div>
   {% endif %}
+</div>
+
+<header class="lib-header">
+  <h1 class="lib-header__title">my music library</h1>
+  <p class="lib-header__meta">connected to {{ display_name }}{% if total_plays %} · {{ total_plays }} plays, {{ session_count }} session{{ 's' if session_count != 1 }}{% endif %}</p>
 </header>
 
 {% if contexts %}
-<div class="contexts-grid">
-  {% for context in contexts %}
-  <article class="sleeve" data-category="{{ context.label }}">
-    <div class="sleeve__label-chip" aria-hidden="true"></div>
-    <h2 class="sleeve__title">{{ context.label }}</h2>
-    <p class="sleeve__catalog">{{ context.playlist_name }}</p>
-    <p class="sleeve__voice">{{ context.category_description }}</p>
-    <p class="sleeve__evidence">{{ context.description }}</p>
-    <form method="post" action="{{ url_for('create_playlist_route') }}">
-      <input type="hidden" name="context_id" value="{{ context.context_id }}">
-      <input type="hidden" name="playlist_name" value="{{ context.playlist_name }}">
-      <button type="submit" class="btn">Create Spotify playlist</button>
-    </form>
-  </article>
-  {% endfor %}
+<div class="lib-stage" id="lib-stage" data-view="single">
+  <div class="lib-cards" id="lib-cards">
+    {% for context in contexts %}
+    <article class="lib-card-wrapper" data-index="{{ loop.index0 }}">
+      <div class="hover-3d">
+        <div class="lib-card">
+          <p class="lib-card__meta">{{ today_display }} &middot; {{ context.track_count if context.track_count is not none else 0 }} track{{ 's' if context.track_count != 1 }}</p>
+          <h2 class="lib-card__title">{{ context.playlist_name or (context.label ~ " session") }}</h2>
+          <p class="lib-card__desc">{{ context.category_description or "No description available for this one yet." }}</p>
+        </div>
+        <div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div>
+      </div>
+      <form method="post" action="{{ url_for('create_playlist_route') }}" class="lib-card__play-form">
+        <input type="hidden" name="context_id" value="{{ context.context_id }}">
+        <input type="hidden" name="playlist_name" value="{{ context.playlist_name }}">
+        <button type="submit" class="btn btn--solid lib-card__play-btn">▶ play</button>
+      </form>
+    </article>
+    {% endfor %}
+  </div>
+
+  <div class="lib-single-nav" id="lib-single-nav">
+    <button type="button" class="lib-nav-btn" id="lib-prev" aria-label="Previous card">‹ prev</button>
+    <p class="lib-single-nav__count" id="lib-position">1 / {{ contexts|length }}</p>
+    <button type="button" class="lib-nav-btn" id="lib-next" aria-label="Next card">next ›</button>
+  </div>
 </div>
 {% else %}
-  <p class="empty">Nothing pressed yet — play some music on Spotify and check back.</p>
+<p class="lib-empty">Nothing pressed yet — play some music on Spotify and check back.</p>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/library.js') }}" defer></script>
 {% endblock %}

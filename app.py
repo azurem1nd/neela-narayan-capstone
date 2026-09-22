@@ -142,6 +142,7 @@ def analyze():
         first_played=plays[0]["played_at"] if plays else None,
         last_played=plays[-1]["played_at"] if plays else None,
         session_count=len(raw_contexts),
+        today_display=now.strftime("%d %b %Y"),
     )
 
 

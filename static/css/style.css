@@ -540,3 +540,352 @@ a { color: inherit; }
   gap: 0.75rem;
   margin-top: 1.5rem;
 }
+
+/* ---------- Library page (My Music Library) ----------
+   Scoped under .library-page, same palette/approach as .landing-page
+   but its own font stack: Unbounded (the Google-loaded 700-900 faces,
+   not the landing page's local Regular override) for card titles,
+   JetBrains Mono for everything else. Both already loaded in
+   base.html's <head> -- no new font-face/link needed. */
+
+.library-page {
+  --tr-bg: #FFF8E7;
+  --tr-blue: #260FC1;
+  --tr-pink: #F253AD;
+  --tr-ink: #1a1610;
+  --font-display: "Unbounded", sans-serif;
+  --font-ui: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  background: var(--tr-bg);
+  color: var(--tr-ink);
+  font-family: var(--font-ui);
+}
+
+.library-page .page {
+  max-width: 72rem;
+}
+
+/* ---- Top bar: back link + single/grid toggle ---- */
+
+.lib-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.lib-back {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--tr-blue);
+  text-decoration: none;
+}
+
+.lib-back:hover {
+  text-decoration: underline;
+}
+
+.lib-view-toggle {
+  display: inline-flex;
+  border: 2px solid var(--tr-blue);
+  border-radius: 999px;
+  padding: 0.2rem;
+  gap: 0.2rem;
+}
+
+.lib-view-toggle__btn {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--tr-blue);
+  cursor: pointer;
+}
+
+.lib-view-toggle__btn.is-active {
+  background: var(--tr-blue);
+  color: var(--tr-bg);
+}
+
+/* ---- Header ---- */
+
+.lib-header {
+  margin-bottom: 2rem;
+}
+
+.lib-header__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(1.75rem, 5vw, 3rem);
+  line-height: 1;
+  color: var(--tr-blue);
+  -webkit-text-stroke: 1.5px #000;
+  paint-order: stroke fill;
+  margin: 0 0 0.5rem;
+}
+
+.lib-header__meta {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--tr-ink);
+  margin: 0;
+}
+
+.lib-empty {
+  font-family: var(--font-ui);
+  color: var(--tr-ink);
+  max-width: 30rem;
+}
+
+/* ---- Stage / view modes ---- */
+
+.lib-cards {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lib-stage[data-view="multi"] .lib-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1.75rem;
+  align-items: stretch;
+}
+
+.lib-stage[data-view="multi"] .lib-card-wrapper {
+  width: 100%;
+}
+
+.lib-stage[data-view="multi"] .lib-single-nav {
+  display: none;
+}
+
+.lib-card-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 22rem;
+}
+
+.lib-card-wrapper[hidden] {
+  display: none;
+}
+
+/* ---- Card content (non-interactive -- lives inside .hover-3d) ---- */
+
+.lib-card {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  background: var(--tr-bg);
+  border: 3px solid var(--tr-blue);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-shadow: 6px 6px 0 var(--tr-pink);
+}
+
+.lib-card__meta {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tr-pink);
+  margin: 0;
+}
+
+.lib-card__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(1.15rem, 3.4vw, 1.5rem);
+  line-height: 1.08;
+  color: var(--tr-blue);
+  margin: 0;
+}
+
+.lib-card__desc {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--tr-ink);
+  margin: 0;
+  overflow-y: auto;
+}
+
+.lib-card__play-form {
+  margin: 0;
+}
+
+.library-page .btn {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  border-color: var(--tr-blue);
+  color: var(--tr-blue);
+}
+
+.library-page .btn--solid {
+  background: var(--tr-pink);
+  border-color: var(--tr-pink);
+  color: var(--tr-bg);
+}
+
+.library-page .btn--solid:hover {
+  background: var(--tr-blue);
+  border-color: var(--tr-blue);
+  color: var(--tr-bg);
+}
+
+.library-page .lib-card__play-btn {
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.7rem 2rem;
+}
+
+/* ---- Single-card navigation ---- */
+
+.lib-single-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.lib-nav-btn {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  border: 2px solid var(--tr-blue);
+  background: transparent;
+  color: var(--tr-blue);
+  cursor: pointer;
+}
+
+.lib-nav-btn:hover:not(:disabled) {
+  background: var(--tr-blue);
+  color: var(--tr-bg);
+}
+
+.lib-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.lib-single-nav__count {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--tr-ink);
+  margin: 0;
+  min-width: 3.5rem;
+  text-align: center;
+}
+
+/* ---- hover-3d (ported from daisyUI v5, https://daisyui.com/components/hover-3d/)
+   Pure CSS, 9 grid children required: the card (:first-child) plus 8
+   empty hover-zone divs. Colors are theme-neutral (white glare,
+   black-tinted drop-shadow) so it reads correctly over any card
+   background. Interactive content (the play button) intentionally
+   lives outside this wrapper, per daisyUI's own documented
+   constraint that only non-interactive content should go inside. */
+
+.hover-3d {
+  perspective: 75rem;
+  --transform: 0, 0;
+  --shine: 100% 100%;
+  --shadow: 0rem 0rem 0rem;
+  --ease: linear(0, .931 13.8%, 1.196 21.4%, 1.343 29.8%, 1.378 36%, 1.365 43.2%, 1.059 78%, 1);
+  filter:
+    drop-shadow(var(--shadow) .1rem rgba(0, 0, 0, 0.01))
+    drop-shadow(var(--shadow) .2rem rgba(0, 0, 0, 0.01))
+    drop-shadow(var(--shadow) .3rem rgba(0, 0, 0, 0.01))
+    drop-shadow(var(--shadow) .4rem rgba(0, 0, 0, 0.01));
+  transition: filter .4s ease-out;
+  display: inline-grid;
+  width: 100%;
+}
+
+.hover-3d > :nth-child(n+2) {
+  isolation: isolate;
+  z-index: 1;
+}
+
+.hover-3d > :first-child {
+  transform: rotate3d(var(--transform), 0, 10deg);
+  transition: transform var(--ease) .5s, scale var(--ease) .5s, outline-color ease-out .5s;
+  outline-offset: -1px;
+  outline: .5px solid transparent;
+  grid-area: 1 / 1 / 4 / 4;
+  overflow: hidden;
+  position: relative;
+}
+
+.hover-3d > :first-child::before {
+  content: "";
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  filter: blur(.75rem);
+  width: 33.3333%;
+  height: 33.3333%;
+  scale: 5;
+  translate: var(--shine);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.2) 10%, rgba(255, 255, 255, 0) 50%);
+  transition: translate .4s ease-out, opacity .4s ease-out;
+  position: absolute;
+}
+
+.hover-3d:hover {
+  --ease: linear(0, .708 15.2%, .927 23.6%, 1.067 33%, 1.12 41%, 1.13 50.2%, 1.019 83.2%, 1);
+}
+
+.hover-3d:hover > :first-child {
+  outline-color: rgba(255, 255, 255, 0.07);
+  scale: 1.05;
+}
+
+.hover-3d:hover > :first-child::before {
+  opacity: 1;
+}
+
+.hover-3d > :nth-child(n+2) {
+  scale: 1.2;
+}
+
+.hover-3d > :nth-child(2) { grid-area: 1 / 1 / 2 / 2; }
+.hover-3d > :nth-child(3) { grid-area: 1 / 2 / 2 / 3; }
+.hover-3d > :nth-child(4) { grid-area: 1 / 3 / 2 / 4; }
+.hover-3d > :nth-child(5) { grid-area: 2 / 1 / 3 / 2; }
+.hover-3d > :nth-child(6) { grid-area: 2 / 3 / 3 / 4; }
+.hover-3d > :nth-child(7) { grid-area: 3 / 1 / 4 / 2; }
+.hover-3d > :nth-child(8) { grid-area: 3 / 2 / 4 / 3; }
+.hover-3d > :nth-child(9) { grid-area: 3 / 3 / 4 / 4; }
+
+.hover-3d:has(> :nth-child(2):hover) { --transform: -1, 1;   --shine: 0% 0%;     --shadow: -.5rem -.5rem; }
+.hover-3d:has(> :nth-child(3):hover) { --transform: -1, 0;   --shine: 100% 0%;   --shadow: 0rem -.5rem; }
+.hover-3d:has(> :nth-child(4):hover) { --transform: -1, -1;  --shine: 200% 0%;   --shadow: .5rem -.5rem; }
+.hover-3d:has(> :nth-child(5):hover) { --transform: 0, 1;    --shine: 0% 100%;   --shadow: -.5rem 0rem; }
+.hover-3d:has(> :nth-child(6):hover) { --transform: 0, -1;   --shine: 200% 100%; --shadow: .5rem 0rem; }
+.hover-3d:has(> :nth-child(7):hover) { --transform: 1, 1;    --shine: 0% 200%;   --shadow: -.5rem .5rem; }
+.hover-3d:has(> :nth-child(8):hover) { --transform: 1, 0;    --shine: 100% 200%; --shadow: 0rem .5rem; }
+.hover-3d:has(> :nth-child(9):hover) { --transform: 1, -1;   --shine: 200% 200%; --shadow: .5rem .5rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hover-3d > :first-child { transition: none; }
+}
