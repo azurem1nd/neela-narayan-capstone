@@ -342,6 +342,144 @@ a { color: inherit; }
   max-width: 30rem;
 }
 
+/* ---------- Landing page (Track Record) ----------
+   Scoped under .landing-page so the rest of the app keeps its
+   existing vinyl/print identity. Palette + type per design brief:
+   base #FFF8E7, app-name blue #260FC1, accent pink #F253AD.
+
+   NOTE ON "Elastic": the brief calls for the Elastic typeface for
+   the wordmark. Elastic (Displaay Type Foundry) is a commercial
+   variable font, not available via Google Fonts / a free CDN, so it
+   is NOT installed here. Substituted with Gluten — a Google Font
+   explicitly designed with the same stretchy/elastic letterforms —
+   as the closest available open alternative. Swap --font-elastic
+   below if a licensed copy of Elastic is added to the project. */
+
+.landing-page {
+  --tr-bg: #FFF8E7;
+  --tr-blue: #260FC1;
+  --tr-pink: #F253AD;
+  --tr-ink: #1a1610;
+  --font-elastic: "Gluten", "Fredoka", var(--font-serif);
+  --font-ui: "Inter", "Circular Std", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  background: var(--tr-bg);
+  color: var(--tr-ink);
+  font-family: var(--font-ui);
+}
+
+.landing-page .page {
+  padding-bottom: clamp(4.5rem, 12vw, 6rem);
+}
+
+.landing-page .hero {
+  gap: 1.25rem;
+  padding-top: clamp(2rem, 8vw, 5rem);
+}
+
+.landing-page .wordmark {
+  font-family: var(--font-elastic);
+  font-weight: 700;
+  font-size: clamp(2.75rem, 11vw, 6rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--tr-blue);
+  text-transform: uppercase;
+  font-style: normal;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 0.5em;
+}
+
+.wordmark__word span {
+  display: inline-block;
+}
+
+.wordmark__word span:nth-child(3n+2) {
+  transform: translateY(-0.06em) rotate(-3deg);
+}
+
+.wordmark__word span:nth-child(4n+1) {
+  transform: translateY(0.05em) rotate(2deg);
+}
+
+.landing-page .connected-line {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--tr-ink);
+  margin: 0;
+}
+
+.landing-page .lede {
+  font-family: var(--font-ui);
+  color: var(--tr-ink);
+  max-width: 30rem;
+}
+
+.landing-page .btn {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  border-color: var(--tr-blue);
+  color: var(--tr-blue);
+}
+
+.landing-page .btn--solid {
+  background: var(--tr-pink);
+  border-color: var(--tr-pink);
+  color: var(--tr-bg);
+}
+
+.landing-page .btn--solid:hover {
+  background: var(--tr-blue);
+  border-color: var(--tr-blue);
+  color: var(--tr-bg);
+}
+
+.landing-page .btn:focus-visible {
+  outline-color: var(--tr-blue);
+}
+
+/* ---------- Bottom ticker (marquee) ---------- */
+
+.landing-page .ticker {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  overflow: hidden;
+  background: var(--tr-pink);
+  padding: 0.65rem 0;
+  z-index: 10;
+}
+
+.landing-page .ticker__track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 40s linear infinite;
+}
+
+.landing-page .ticker__seq {
+  display: inline-block;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  color: var(--tr-blue);
+}
+
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-page .ticker__track { animation: none; }
+}
+
 /* ---------- Confirmation ---------- */
 
 .confirm {

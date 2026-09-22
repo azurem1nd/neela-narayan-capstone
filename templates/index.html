@@ -1,24 +1,31 @@
 {% extends "base.html" %}
 
+{% block title %}Track Record{% endblock %}
+
+{% block body_class %}landing-page{% endblock %}
+
 {% block content %}
 <section class="hero">
-  <div class="platter{{ ' is-playing' if logged_in else '' }}" aria-hidden="true">
-    <div class="tonearm-base"></div>
-    <div class="tonearm-arm"><span class="tonearm-head"></span></div>
-    <div class="disc">
-      <div class="disc__label"><span class="disc__label-text">UVP</span></div>
-      <div class="disc__spindle"></div>
-    </div>
-  </div>
-
-  <h1 class="wordmark">Untitled Vinyl Player</h1>
+  <h1 class="wordmark" aria-label="Track Record">
+    <span class="wordmark__word" aria-hidden="true"><span>T</span><span>R</span><span>A</span><span>C</span><span>K</span></span>
+    <span class="wordmark__word" aria-hidden="true"><span>R</span><span>E</span><span>C</span><span>O</span><span>R</span><span>D</span></span>
+  </h1>
 
   {% if logged_in %}
-    <p class="lede">Connected as {{ display_name }}.</p>
-    <a class="btn btn--solid" href="{{ url_for('analyze') }}">Find my listening contexts</a>
+    <p class="connected-line">connected to {{ display_name }}</p>
+    <a class="btn btn--solid" href="{{ url_for('analyze') }}">see my library</a>
   {% else %}
     <p class="lede">It finds the shapes hiding in how you actually listen — the song you played on repeat for a day and dropped, the one you never really stopped playing.</p>
     <a class="btn btn--solid" href="{{ url_for('login') }}">Connect Spotify</a>
   {% endif %}
 </section>
+
+{% if logged_in %}
+<div class="ticker" aria-hidden="true">
+  <div class="ticker__track">
+    <span class="ticker__seq">{% for i in range(15) %}connected to your spotify @{{ display_name }} ★ {% endfor %}</span>
+    <span class="ticker__seq">{% for i in range(15) %}connected to your spotify @{{ display_name }} ★ {% endfor %}</span>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
