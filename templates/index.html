@@ -13,7 +13,7 @@
 
   {% if logged_in %}
     <p class="connected-line">connected to {{ display_name }}</p>
-    <a class="btn btn--solid" href="{{ url_for('analyze') }}">see my library</a>
+    <a class="btn btn--solid" href="{{ url_for('analyze') }}">my music library</a>
   {% else %}
     <p class="lede">TRACK RECORD finds the patterns hiding in your listening history — the songs tied to a place, a mood, a phase — and turns them into playlists you can actually revisit.</p>
     <a class="btn btn--solid" href="{{ url_for('login') }}">Connect Spotify</a>
@@ -25,7 +25,7 @@
       class="turntable-3d"
       id="turntable-3d"
       data-spinning="true"
-      aria-label="A record player with an iridescent disc, spinning — see my library"
+      aria-label="A record player with an iridescent disc, spinning — my music library"
     ></a>
   {% else %}
     <div
