@@ -360,7 +360,7 @@ a { color: inherit; }
   --tr-blue: #260FC1;
   --tr-pink: #F253AD;
   --tr-ink: #1a1610;
-  --font-display: "Unbounded", "Elastic", sans-serif;
+  --font-display: "Elastic", "Unbounded", sans-serif;
   --font-ui: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   /* Overrides the site-wide mono token (IBM Plex Mono) for this subtree only. */
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
