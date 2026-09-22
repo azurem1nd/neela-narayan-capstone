@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_card_graphics.html" import squiggle, companion_graphic, trigger_graphic, locked_graphic, spiral_graphic, explore_graphic, glimpse_graphic, companion_description, trigger_description, locked_description, spiral_description, explore_description, glimpse_description %}
+{% from "_card_graphics.html" import squiggle, companion_graphic, trigger_graphic, locked_graphic, spiral_graphic, explore_graphic, glimpse_graphic, companion_description, trigger_description, locked_description, spiral_description, explore_description, glimpse_description, locked_scribble, spiral_scribble %}
 
 {% block title %}My Music Library — Track Record{% endblock %}
 
@@ -56,7 +56,10 @@
       {% endif %}
         <div class="hover-3d">
           <{{ 'span' if context.playlist_url else 'button' }} class="ctx-card"{% if not context.playlist_url %} type="submit" aria-label="{{ visual.title }} -- create this playlist on Spotify"{% endif %}>
-            {{ squiggle() }}
+            {% if context.label == 'Locked' %}{{ locked_scribble() }}
+            {% elif context.label == 'Spiral' %}{{ spiral_scribble() }}
+            {% else %}{{ squiggle() }}
+            {% endif %}
             {% if context.label == 'Companion' %}{{ companion_graphic() }}
             {% elif context.label == 'Trigger' %}{{ trigger_graphic() }}
             {% elif context.label == 'Locked' %}{{ locked_graphic() }}
