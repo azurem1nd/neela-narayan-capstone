@@ -763,7 +763,7 @@ a { color: inherit; }
   font-size: 27cqw;
   line-height: 0.78;
   color: var(--ctx-accent, var(--tr-blue));
-  -webkit-text-stroke: 0.35cqw var(--tr-ink);
+  -webkit-text-stroke: 0.50cqw var(--tr-ink);
   paint-order: stroke fill;
   margin: -1cqw 0 0 -2cqw;
 }
