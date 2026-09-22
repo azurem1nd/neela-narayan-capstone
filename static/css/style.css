@@ -547,7 +547,7 @@ a { color: inherit; }
   font-family: var(--font-mono);
   font-weight: 600;
   font-size: 0.95rem;
-  color: var(--tr-blue);
+  color: var(--tr-ink);
   text-decoration: none;
 }
 
@@ -557,7 +557,7 @@ a { color: inherit; }
 
 .lib-view-toggle {
   display: inline-flex;
-  border: 2px solid var(--tr-blue);
+  border: 2px solid var(--tr-ink);
   border-radius: 999px;
   padding: 0.2rem;
   gap: 0.2rem;
@@ -573,12 +573,12 @@ a { color: inherit; }
   border-radius: 999px;
   border: none;
   background: transparent;
-  color: var(--tr-blue);
+  color: var(--tr-ink);
   cursor: pointer;
 }
 
 .lib-view-toggle__btn.is-active {
-  background: var(--tr-blue);
+  background: var(--tr-ink);
   color: var(--tr-bg);
 }
 
@@ -934,14 +934,14 @@ a { color: inherit; }
   letter-spacing: 0.03em;
   padding: 0.6rem 1.1rem;
   border-radius: 999px;
-  border: 2px solid var(--tr-blue);
+  border: 2px solid var(--tr-ink);
   background: transparent;
-  color: var(--tr-blue);
+  color: var(--tr-ink);
   cursor: pointer;
 }
 
 .lib-nav-btn:hover:not(:disabled) {
-  background: var(--tr-blue);
+  background: var(--tr-ink);
   color: var(--tr-bg);
 }
 
