@@ -6,24 +6,17 @@
 
 {% block content %}
 <section class="hero">
-  <button
-    type="button"
-    class="wordmark-block"
-    id="wordmark-toggle"
-    aria-expanded="false"
-    aria-controls="about-panel"
-  >
+  <div class="wordmark-block">
     <h1 class="wordmark">TRACK RECORD</h1>
-  </button>
+  </div>
 
   <div class="landing-panels">
     {% if logged_in %}
-      <a class="subtitle-link" id="subtitle-panel" href="{{ url_for('analyze') }}">your music library</a>
+      <a class="subtitle-link" href="{{ url_for('analyze') }}">your music library</a>
     {% else %}
-      <a class="subtitle-link" id="subtitle-panel" href="{{ url_for('login') }}">connect to spotify</a>
+      <p class="about-panel">TRACK RECORD finds the patterns hiding in your listening history — the songs tied to a place, a mood, a phase — and turns them into playlists you can actually revisit</p>
+      <a class="subtitle-link" href="{{ url_for('login') }}">connect to spotify</a>
     {% endif %}
-
-    <p class="about-panel" id="about-panel" hidden>TRACK RECORD finds the patterns hiding in your listening history — the songs tied to a place, a mood, a phase — and turns them into playlists you can actually revisit</p>
   </div>
 </section>
 
@@ -37,8 +30,4 @@
     <span class="ticker__seq">{% for i in range(15) %}{{ long_phrase }} ★ {{ short_phrase }} ★ {% endfor %}</span>
   </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/landing.js') }}" defer></script>
 {% endblock %}
