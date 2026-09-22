@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_card_graphics.html" import squiggle, companion_graphic, trigger_graphic, locked_graphic, spiral_graphic, explore_graphic, glimpse_graphic, companion_description, trigger_description, locked_description, spiral_description, explore_description, glimpse_description, locked_scribble, spiral_scribble %}
+{% from "_card_graphics.html" import squiggle, companion_graphic, trigger_graphic, locked_graphic, spiral_graphic, explore_graphic, glimpse_graphic, locked_scribble, spiral_scribble %}
 
 {% block title %}My Music Library — Track Record{% endblock %}
 
@@ -79,16 +79,7 @@
               </span>
             </span>
 
-            <span class="ctx-card__desc">
-              {% if context.label == 'Companion' %}{{ companion_description() }}
-              {% elif context.label == 'Trigger' %}{{ trigger_description() }}
-              {% elif context.label == 'Locked' %}{{ locked_description() }}
-              {% elif context.label == 'Spiral' %}{{ spiral_description() }}
-              {% elif context.label == 'Exploration' %}{{ explore_description() }}
-              {% elif context.label == 'Glimpse' %}{{ glimpse_description() }}
-              {% endif %}
-              <span class="sr-only">{{ context.category_description or "No description available for this one yet." }}</span>
-            </span>
+            <span class="ctx-card__desc">{{ context.category_description or "No description available for this one yet." }}</span>
 
             {% if visual.artwork %}
             <span class="ctx-card__artwork">

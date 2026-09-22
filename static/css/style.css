@@ -752,29 +752,14 @@ a { color: inherit; }
 .ctx-card__desc {
   position: relative;
   z-index: 1;
-  display: flex;
-  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 3.4cqw;
+  line-height: 1.5;
   color: var(--tr-ink);
-  max-width: 100%;
+  max-width: 80%;
   margin: 5.5cqw 0 0;
+  text-align: center;
 }
-
-/* Description text rendered as a vector image (traced from the
-   design mockup), sized to its own true scale relative to the
-   712-wide reference card -- not stretched to fill a fixed box, so
-   the typography reads at the same size across every card. */
-.ctx-card__desc-svg {
-  display: block;
-  height: auto;
-  color: var(--tr-ink);
-}
-
-.ctx-card__desc-svg--companion { width: 60.67cqw; }
-.ctx-card__desc-svg--trigger { width: 79.63cqw; }
-.ctx-card__desc-svg--locked { width: 64.75cqw; }
-.ctx-card__desc-svg--spiral { width: 64.89cqw; }
-.ctx-card__desc-svg--explore { width: 60.67cqw; }
-.ctx-card__desc-svg--glimpse { width: 71.21cqw; }
 
 .sr-only {
   position: absolute;
