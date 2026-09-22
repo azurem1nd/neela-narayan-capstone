@@ -19,13 +19,23 @@
     <a class="btn btn--solid" href="{{ url_for('login') }}">Connect Spotify</a>
   {% endif %}
 
-  <div
-    class="turntable-3d"
-    id="turntable-3d"
-    data-spinning="{{ 'true' if logged_in else 'false' }}"
-    role="img"
-    aria-label="A record player with an iridescent disc, {{ 'spinning' if logged_in else 'idle, waiting to connect' }}"
-  ></div>
+  {% if logged_in %}
+    <a
+      href="{{ url_for('analyze') }}"
+      class="turntable-3d"
+      id="turntable-3d"
+      data-spinning="true"
+      aria-label="A record player with an iridescent disc, spinning — see my library"
+    ></a>
+  {% else %}
+    <div
+      class="turntable-3d"
+      id="turntable-3d"
+      data-spinning="false"
+      role="img"
+      aria-label="A record player with an iridescent disc, idle, waiting to connect"
+    ></div>
+  {% endif %}
 </section>
 
 <div class="ticker" aria-hidden="true">

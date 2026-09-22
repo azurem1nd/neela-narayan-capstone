@@ -371,12 +371,12 @@ a { color: inherit; }
 }
 
 .landing-page .page {
-  padding-bottom: clamp(4.5rem, 12vw, 6rem);
+  padding-bottom: clamp(4rem, 10vw, 5rem);
 }
 
 .landing-page .hero {
-  gap: 1.75rem;
-  padding-top: clamp(2.5rem, 9vw, 5.5rem);
+  gap: 1.25rem;
+  padding-top: clamp(2rem, 6vw, 3.5rem);
 }
 
 /* Poster-energy pass: bigger, tighter headline type and more
@@ -386,7 +386,7 @@ a { color: inherit; }
 .landing-page .wordmark {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(3.25rem, 13vw, 7.5rem);
+  font-size: clamp(2.25rem, 7vw, 4.5rem);
   line-height: 0.86;
   letter-spacing: -0.01em;
   color: var(--tr-blue);
@@ -404,7 +404,10 @@ a { color: inherit; }
 }
 
 .landing-page .turntable-3d {
-  width: clamp(240px, 46vw, 400px);
+  /* Smallest of a px cap, a viewport-width share, and a viewport-height
+     share -- keeps the (square) graphic, plus the headline/button
+     stack above it, from ever overflowing the visible viewport. */
+  width: min(320px, 40vw, 42vh);
   aspect-ratio: 1 / 1;
   margin: 0.5rem auto 0;
 }
@@ -413,6 +416,23 @@ a { color: inherit; }
   display: block;
   width: 100%;
   height: 100%;
+}
+
+.landing-page a.turntable-3d {
+  display: block;
+  cursor: pointer;
+  transition: transform 220ms ease, filter 220ms ease;
+}
+
+.landing-page a.turntable-3d:hover,
+.landing-page a.turntable-3d:focus-visible {
+  transform: scale(1.035);
+  filter: drop-shadow(0 0 20px rgba(242, 83, 173, 0.45));
+}
+
+.landing-page a.turntable-3d:focus-visible {
+  outline: 3px solid var(--tr-blue);
+  outline-offset: 6px;
 }
 
 .landing-page .connected-line {

@@ -36,29 +36,30 @@ function makeIridescentDiscTexture() {
   const R = size * 0.5;
 
   const base = ctx.createRadialGradient(cx, cy, R * 0.12, cx, cy, R);
-  base.addColorStop(0, '#e8ebee');
-  base.addColorStop(1, '#a8adb5');
+  base.addColorStop(0, '#eef1f4');
+  base.addColorStop(0.6, '#9297a1');
+  base.addColorStop(1, '#63676f');
   ctx.fillStyle = base;
   ctx.beginPath();
   ctx.arc(cx, cy, R, 0, Math.PI * 2);
   ctx.fill();
 
-  const streakCount = 260;
+  const streakCount = 300;
   for (let i = 0; i < streakCount; i++) {
     const angle = (i / streakCount) * Math.PI * 2 + Math.random() * 0.02;
     const hue = (i * 53) % 360;
     const innerR = R * (0.16 + Math.random() * 0.06);
-    const outerR = R * (0.74 + Math.random() * 0.25);
+    const outerR = R * (0.76 + Math.random() * 0.23);
     const x0 = cx + Math.cos(angle) * innerR;
     const y0 = cy + Math.sin(angle) * innerR;
     const x1 = cx + Math.cos(angle) * outerR;
     const y1 = cy + Math.sin(angle) * outerR;
     const grad = ctx.createLinearGradient(x0, y0, x1, y1);
-    grad.addColorStop(0, `hsla(${hue}, 95%, 62%, 0)`);
-    grad.addColorStop(0.5, `hsla(${hue}, 100%, 60%, 0.7)`);
-    grad.addColorStop(1, `hsla(${(hue + 45) % 360}, 95%, 62%, 0)`);
+    grad.addColorStop(0, `hsla(${hue}, 100%, 55%, 0)`);
+    grad.addColorStop(0.5, `hsla(${hue}, 100%, 58%, 0.95)`);
+    grad.addColorStop(1, `hsla(${(hue + 45) % 360}, 100%, 55%, 0)`);
     ctx.strokeStyle = grad;
-    ctx.lineWidth = 1.2 + Math.random() * 2.6;
+    ctx.lineWidth = 1.4 + Math.random() * 3;
     ctx.beginPath();
     ctx.moveTo(x0, y0);
     ctx.lineTo(x1, y1);
@@ -104,22 +105,22 @@ function initTurntable(container) {
   const ambient = new THREE.AmbientLight(0xffffff, 0.35);
   scene.add(ambient);
 
-  const key = new THREE.DirectionalLight(0xffffff, 2.0);
+  const key = new THREE.DirectionalLight(0xffffff, 2.2);
   key.position.set(3, 5.5, 4);
   scene.add(key);
 
-  const rim = new THREE.PointLight(0xbcd6ff, 0.5, 18);
+  const rim = new THREE.PointLight(0xbcd6ff, 0.85, 18);
   rim.position.set(-4, 2, -3);
   scene.add(rim);
 
-  const warm = new THREE.PointLight(0xfff1d6, 0.3, 18);
+  const warm = new THREE.PointLight(0xfff1d6, 0.55, 18);
   warm.position.set(2.5, -1, 3.5);
   scene.add(warm);
 
   // Third color pulled from the brand accent, positioned as a tight
   // glint so it adds a magenta note to the highlights without
   // tinting the whole disc surface.
-  const accent = new THREE.PointLight(0xf253ad, 0.4, 14);
+  const accent = new THREE.PointLight(0xf253ad, 0.65, 14);
   accent.position.set(-2, -1.5, 4);
   scene.add(accent);
 
@@ -140,13 +141,13 @@ function initTurntable(container) {
   const discMat = new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
     map: makeIridescentDiscTexture(),
-    metalness: 0.65,
-    roughness: 0.1,
-    iridescence: 0.4,
-    iridescenceIOR: 1.3,
-    iridescenceThicknessRange: [180, 480],
+    metalness: 0.75,
+    roughness: 0.06,
+    iridescence: 0.8,
+    iridescenceIOR: 1.4,
+    iridescenceThicknessRange: [120, 580],
     clearcoat: 1,
-    clearcoatRoughness: 0.04,
+    clearcoatRoughness: 0.03,
   });
 
   const labelMat = new THREE.MeshPhysicalMaterial({
