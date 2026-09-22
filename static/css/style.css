@@ -522,7 +522,7 @@ a { color: inherit; }
   --ctx-locked: #9591F8;
   --ctx-spiral: #CFB23C;
   --ctx-exploration: #BEE860;
-  --ctx-glimpse: #9892FC;
+  --ctx-glimpse: #9591F8;
 
   background: var(--tr-bg);
   color: var(--tr-ink);
@@ -801,45 +801,37 @@ a { color: inherit; }
   z-index: 0;
 }
 
+/* Sizes below use each asset's own aspect ratio (width set, height
+   auto) rather than forcing a square/old proportion -- companion,
+   trigger/spiral, locked/glimpse, and explore all have their own
+   real intrinsic shape now instead of a shared approximation. */
+
 .ctx-card__graphic--dots {
   top: 0;
   right: 0;
-  width: 40cqw;
+  width: 34cqw;
   height: auto;
-}
-
-.ctx-card__graphic--dots circle {
-  fill: currentColor;
 }
 
 .ctx-card__graphic--checker {
   top: 0;
   right: 0;
-  width: 17cqw;
-  height: 62cqw;
-  color: var(--ctx-accent, var(--tr-blue));
-}
-
-.ctx-card__graphic--checker rect {
-  fill: currentColor;
+  width: 15cqw;
+  height: auto;
 }
 
 .ctx-card__graphic--stripes {
   right: 0;
   bottom: 12cqw;
-  width: 20cqw;
-  height: 20cqw;
-}
-
-.ctx-card__graphic--stripes rect {
-  fill: currentColor;
+  width: 16cqw;
+  height: auto;
 }
 
 .ctx-card__graphic--curves {
-  right: -2cqw;
-  bottom: 10cqw;
-  width: 28cqw;
-  height: 28cqw;
+  right: 0;
+  bottom: 8cqw;
+  width: 30cqw;
+  height: auto;
 }
 
 .ctx-card__graphic--squiggle {
