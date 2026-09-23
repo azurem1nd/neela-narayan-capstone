@@ -7,6 +7,7 @@ API instead of listening_history.db) and the web/session layer around it.
 """
 
 import os
+import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -246,26 +247,41 @@ def create_playlist_route():
     if not context_id:
         return jsonify({"error": "missing 'context_id'"}), 400
 
-    plays = fetch_recent_plays(sp)
-    contexts = consolidate_by_category(build_contexts(plays))
+    try:
+        plays = fetch_recent_plays(sp)
+        contexts = consolidate_by_category(build_contexts(plays))
 
-    match = next((c for c in contexts if c["context_id"] == context_id), None)
-    if match is None:
+        match = next((c for c in contexts if c["context_id"] == context_id), None)
+        if match is None:
+            return jsonify({
+                "error": "context not found -- your listening data may have "
+                          "changed since you viewed it, try again"
+            }), 404
+
+        now = datetime.now(timezone.utc)
+        playlist_name = generate_playlist_name(match["label"], now)
+
+        result = create_playlist(
+            sp,
+            match["playlist_track_ids"],
+            playlist_name,
+            description=match["category_description"],
+        )
+        return jsonify(result)
+    except Exception as exc:
+        # TEMPORARY, for diagnosing a live 500 -- a bare 500 with no
+        # body gives no way to tell which of the steps above actually
+        # failed. Prints the real traceback server-side (never a
+        # token/secret -- this route never handles either directly)
+        # and echoes back just the exception's type/message, so the
+        # cause is visible from the Network tab too without needing
+        # terminal access. Remove once diagnosed.
+        traceback.print_exc()
         return jsonify({
-            "error": "context not found -- your listening data may have "
-                      "changed since you viewed it, try again"
-        }), 404
-
-    now = datetime.now(timezone.utc)
-    playlist_name = generate_playlist_name(match["label"], now)
-
-    result = create_playlist(
-        sp,
-        match["playlist_track_ids"],
-        playlist_name,
-        description=match["category_description"],
-    )
-    return jsonify(result)
+            "error": "playlist creation failed",
+            "exception_type": type(exc).__name__,
+            "exception_message": str(exc),
+        }), 500
 
 
 if __name__ == "__main__":

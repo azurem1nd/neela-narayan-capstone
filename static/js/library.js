@@ -106,10 +106,16 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ context_id: contextId }),
       })
-        .then((res) => res.json().then((data) => ({ ok: res.ok, data: data })))
-        .then(({ ok, data }) => {
+        .then((res) => res.json().then((data) => ({ ok: res.ok, status: res.status, data: data })))
+        .then(({ ok, status, data }) => {
           if (!ok || !data.playlist_id) {
-            throw new Error((data && data.error) || 'playlist creation failed');
+            // TEMPORARY, for diagnosing a live 500 -- surfaces the
+            // backend's exception_type/exception_message (see app.py's
+            // /create-playlist) in the console, not just "failed".
+            const detail = data && data.exception_type
+              ? ` [${status}] ${data.exception_type}: ${data.exception_message}`
+              : ` [${status}] ${(data && data.error) || 'no error detail returned'}`;
+            throw new Error('playlist creation failed --' + detail);
           }
           // Navigating away -- deliberately leave creating=true and the
           // loading overlay showing, there is nothing left to reset.
