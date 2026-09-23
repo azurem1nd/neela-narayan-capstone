@@ -7,6 +7,7 @@ API instead of listening_history.db) and the web/session layer around it.
 """
 
 import os
+import time
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
@@ -180,6 +181,25 @@ def playlist_detail(playlist_id):
             # no broken playlist page to show, just go back to a live
             # library.
             return redirect(url_for("analyze"))
+
+        if "tracks" not in playlist:
+            # DIAGNOSED: this page is reached by navigating here within
+            # ~milliseconds of actually creating the playlist (see
+            # library.js) -- Spotify's read path for a brand-new
+            # playlist can momentarily return a partial object (name/
+            # owner present, tracks not yet populated on whichever
+            # backend served this read) before catching up. One short
+            # retry covers that without masking a genuinely different
+            # shape problem -- confirmed via the exact keys Spotify
+            # actually returned (safe to log: playlist metadata, never
+            # a token).
+            print(f"playlist_detail: 'tracks' missing on first fetch for {playlist_id}, "
+                  f"keys were {sorted(playlist.keys())} -- retrying once")
+            time.sleep(1)
+            try:
+                playlist = sp.playlist(playlist_id)
+            except SpotifyException:
+                return redirect(url_for("analyze"))
 
         name_parts = parse_playlist_name(playlist["name"])
         images = playlist.get("images") or []
