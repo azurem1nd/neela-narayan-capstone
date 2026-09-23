@@ -229,6 +229,11 @@ def playlist_detail(playlist_id):
                     "album": album.get("name") or "",
                     "image_url": album_images[-1]["url"] if album_images else None,
                     "duration": _format_duration(item.get("duration_ms")),
+                    # Needed so the per-track play button (art overlay)
+                    # can tell which row is currently playing by
+                    # comparing against the SDK's player_state_changed
+                    # current_track.uri -- see static/js/player.js.
+                    "uri": item.get("uri"),
                 })
             track_count = items_paging.get("total", len(tracks))
 

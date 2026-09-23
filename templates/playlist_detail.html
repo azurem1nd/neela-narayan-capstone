@@ -33,12 +33,24 @@
     {% elif playlist.tracks %}
       <ol class="playlist-card__tracks">
         {% for track in playlist.tracks %}
-        <li class="playlist-card__track">
-          {% if track.image_url %}
-            <img class="playlist-card__track-art" src="{{ track.image_url }}" alt="">
-          {% else %}
-            <span class="playlist-card__track-art playlist-card__track-art--fallback"></span>
-          {% endif %}
+        <li class="playlist-card__track" data-track-uri="{{ track.uri or '' }}">
+          <button
+            type="button"
+            class="playlist-card__track-art-btn"
+            data-track-index="{{ loop.index0 }}"
+            aria-label="Play {{ track.name }}"
+            {% if not track.uri %}disabled{% endif %}
+          >
+            {% if track.image_url %}
+              <img class="playlist-card__track-art" src="{{ track.image_url }}" alt="">
+            {% else %}
+              <span class="playlist-card__track-art playlist-card__track-art--fallback"></span>
+            {% endif %}
+            <span class="playlist-card__track-play-icon" aria-hidden="true">
+              <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+            </span>
+          </button>
           <span class="playlist-card__track-info">
             <span class="playlist-card__track-name">{{ track.name }}</span>
             <span class="playlist-card__track-by">{{ track.artist }}{% if track.album %} · {{ track.album }}{% endif %}</span>

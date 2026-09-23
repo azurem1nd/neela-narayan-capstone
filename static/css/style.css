@@ -780,10 +780,25 @@ a { color: inherit; }
   color: var(--tr-ink);
 }
 
-.playlist-card__track-art {
+.playlist-card__track-art-btn {
+  position: relative;
   flex-shrink: 0;
   width: clamp(3.5rem, 8vw, 6rem);
   height: clamp(3.5rem, 8vw, 6rem);
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.playlist-card__track-art-btn:disabled {
+  cursor: default;
+}
+
+.playlist-card__track-art {
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   background: var(--tr-blue);
 }
@@ -791,6 +806,52 @@ a { color: inherit; }
 .playlist-card__track-art--fallback {
   display: block;
   background: #D9D9D9;
+}
+
+/* Per-track play/pause affordance on the album art -- no reference
+   asset supplied for this (functional chrome, not part of the
+   poster-card design system), built as a plain triangle/bars icon
+   consistent with the rest of the site's minimal functional UI. */
+.playlist-card__track-play-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(29, 29, 29, 0.45);
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.playlist-card__track-play-icon svg {
+  width: 38%;
+  height: 38%;
+  color: var(--tr-bg);
+}
+
+.playlist-card__track-play-icon .icon-pause {
+  display: none;
+}
+
+.playlist-card__track-art-btn:not(:disabled):hover .playlist-card__track-play-icon,
+.playlist-card__track-art-btn:focus-visible .playlist-card__track-play-icon {
+  opacity: 1;
+}
+
+.playlist-card__track-art-btn:disabled .playlist-card__track-play-icon {
+  display: none;
+}
+
+.playlist-card__track[data-playing="true"] .playlist-card__track-play-icon {
+  opacity: 1;
+}
+
+.playlist-card__track[data-playing="true"] .icon-play {
+  display: none;
+}
+
+.playlist-card__track[data-playing="true"] .icon-pause {
+  display: block;
 }
 
 .playlist-card__track-info {
