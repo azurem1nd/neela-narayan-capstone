@@ -15,10 +15,11 @@ from flask import Flask, jsonify, redirect, render_template, request, session, u
 from flask_session import Session
 import spotipy
 from spotipy.cache_handler import FlaskSessionCacheHandler
+from spotipy.exceptions import SpotifyException
 from spotipy.oauth2 import SpotifyOAuth
 
 from context_detection import build_contexts, consolidate_by_category
-from playlist_naming import generate_playlist_name
+from playlist_naming import generate_playlist_name, parse_playlist_name
 from spotify_playlist import create_playlist
 
 REPO_DIR = Path(__file__).resolve().parent
@@ -146,39 +147,56 @@ def analyze():
     )
 
 
-@app.route("/context/<context_id>")
-def context_detail(context_id):
-    """Dedicated page for one specific context/playlist card.
+@app.route("/playlist/<playlist_id>")
+def playlist_detail(playlist_id):
+    """Dedicated page for one specific, already-created Spotify playlist.
 
-    Re-fetches and re-derives contexts fresh, same as /create-playlist --
-    this app has no persistence, so a context is only ever known by
-    recomputing it from the user's current listening history and looking
-    up the id the card linked to (see context-detection/SKILL.md Known
-    Limitation #3). No playback/Spotify action happens here yet -- just
-    the context's own already-computed data.
+    Reached only after /create-playlist has actually succeeded (see the
+    library card's click handler in library.js) -- this route never
+    creates anything itself. Re-fetches the playlist directly from
+    Spotify by id rather than keeping any local copy: Spotify's own
+    object already has the exact name/description this app set at
+    creation time (nothing to duplicate or pass through a redirect),
+    and its own access-control means a different user's session simply
+    can't fetch a playlist they don't own (playlists here are always
+    created public=False -- see spotify_playlist.py).
     """
     sp = get_spotify_client()
     if sp is None:
         return redirect(url_for("index"))
 
-    me = sp.current_user()
-    plays = fetch_recent_plays(sp)
-    contexts = consolidate_by_category(build_contexts(plays))
-
-    match = next((c for c in contexts if c["context_id"] == context_id), None)
-    if match is None:
-        # Listening data changed since the card was viewed -- fall back
-        # to a fresh library view rather than a broken detail page.
+    try:
+        playlist = sp.playlist(playlist_id)
+    except SpotifyException:
+        # Not found, not this user's, or Spotify hiccuped -- there is no
+        # broken playlist page to show, just go back to a live library.
         return redirect(url_for("analyze"))
 
-    now = datetime.now(timezone.utc)
-    match["playlist_name"] = generate_playlist_name(match["label"], now)
+    name_parts = parse_playlist_name(playlist["name"])
+    images = playlist.get("images") or []
+    tracks = []
+    for item in playlist["tracks"]["items"]:
+        track = item.get("track")
+        if track is None:
+            continue
+        tracks.append({
+            "name": track.get("name"),
+            "artist": ", ".join(a["name"] for a in track.get("artists", [])) or "Unknown",
+        })
 
     return render_template(
-        "context_detail.html",
-        display_name=me.get("display_name") or me["id"],
-        context=match,
-        today_display=now.strftime("%d %b %Y"),
+        "playlist_detail.html",
+        playlist={
+            "id": playlist["id"],
+            "name": playlist["name"],
+            "category": name_parts["category"],
+            "date": name_parts["date"],
+            "description": playlist.get("description") or "",
+            "track_count": playlist["tracks"]["total"],
+            "image_url": images[0]["url"] if images else None,
+            "url": playlist["external_urls"]["spotify"],
+            "tracks": tracks,
+        },
     )
 
 
@@ -205,17 +223,28 @@ def spotify_token():
 
 @app.route("/create-playlist", methods=["POST"])
 def create_playlist_route():
+    """Create a real Spotify playlist from one library card, called via
+    fetch() from library.js's card click handler -- JSON in, JSON out.
+
+    Re-fetches and re-derives contexts fresh, same as /playlist/<id>'s
+    caller relies on and as documented in context-detection/SKILL.md
+    Known Limitation #3 -- this app has no persistence, so "the exact
+    qualifying track IDs already calculated for that context" are
+    recomputed from the user's current listening history rather than
+    trusted from the client, then used completely unfiltered/unedited
+    (match["playlist_track_ids"]) for the tracks actually sent to
+    Spotify. The playlist name is generated fresh here via the same
+    generate_playlist_name() every other route uses -- not supplied by
+    the client -- so it's always byte-for-byte the real, current name.
+    """
     sp = get_spotify_client()
     if sp is None:
-        return redirect(url_for("index"))
+        return jsonify({"error": "not authenticated"}), 401
 
-    context_id = request.form.get("context_id")
+    data = request.get_json(silent=True) or {}
+    context_id = data.get("context_id")
     if not context_id:
         return jsonify({"error": "missing 'context_id'"}), 400
-
-    playlist_name = request.form.get("playlist_name")
-    if not playlist_name:
-        return jsonify({"error": "missing 'playlist_name'"}), 400
 
     plays = fetch_recent_plays(sp)
     contexts = consolidate_by_category(build_contexts(plays))
@@ -227,13 +256,16 @@ def create_playlist_route():
                       "changed since you viewed it, try again"
         }), 404
 
+    now = datetime.now(timezone.utc)
+    playlist_name = generate_playlist_name(match["label"], now)
+
     result = create_playlist(
         sp,
         match["playlist_track_ids"],
         playlist_name,
         description=match["category_description"],
     )
-    return render_template("playlist_created.html", result=result)
+    return jsonify(result)
 
 
 if __name__ == "__main__":

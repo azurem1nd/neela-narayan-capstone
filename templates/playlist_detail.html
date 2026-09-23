@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}{{ playlist.name }} — Track Record{% endblock %}
+
+{% block body_class %}library-page{% endblock %}
+
+{% block content %}
+<div class="lib-topbar">
+  <a class="lib-back" href="{{ url_for('analyze') }}">← back to library</a>
+</div>
+
+<header class="lib-header">
+  <h1 class="lib-header__title">here's your {{ playlist.name }} playlist.</h1>
+</header>
+
+<section class="ctx-detail">
+  <p class="ctx-detail__description">{{ playlist.description or "No description available for this one yet." }}</p>
+  <p class="playlist-ready">Ready to play.</p>
+</section>
+
+<div class="playlist-summary">
+  {% if playlist.image_url %}
+    <img class="playlist-summary__art" src="{{ playlist.image_url }}" alt="">
+  {% else %}
+    <span class="playlist-summary__art playlist-summary__art--fallback">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    </span>
+  {% endif %}
+  <div class="playlist-summary__meta">
+    <p class="playlist-summary__line">{{ playlist.date }} · {{ playlist.track_count }} track{{ 's' if playlist.track_count != 1 }}</p>
+    <a class="playlist-summary__open" href="{{ playlist.url }}" target="_blank" rel="noopener">Open in Spotify</a>
+  </div>
+</div>
+
+{#- Stage 3: real playback of THIS created playlist via the existing
+   Web Playback SDK bootstrap from Stage 1/2. See static/js/player.js. -#}
+<div class="player-status" id="player-status" data-state="connecting" data-playlist-uri="spotify:playlist:{{ playlist.id }}">
+  <p class="player-status__label">TRACK RECORD PLAYER</p>
+  <p class="player-status__value" id="player-status-value">Connecting...</p>
+  <p class="player-now-playing" id="player-now-playing"></p>
+  <div class="player-controls">
+    <button type="button" class="player-control-btn" id="player-prev-btn" disabled>PREV</button>
+    <button type="button" class="player-control-btn player-control-btn--play" id="player-play-btn" disabled>PLAY</button>
+    <button type="button" class="player-control-btn" id="player-next-btn" disabled>NEXT</button>
+  </div>
+</div>
+
+{% if playlist.tracks %}
+<ol class="playlist-tracks">
+  {% for track in playlist.tracks %}
+  <li class="playlist-tracks__item">
+    <span class="playlist-tracks__index">{{ loop.index }}</span>
+    <span class="playlist-tracks__name">{{ track.name }}</span>
+    <span class="playlist-tracks__artist">{{ track.artist }}</span>
+  </li>
+  {% endfor %}
+</ol>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
+<script src="{{ url_for('static', filename='js/player.js') }}"></script>
+{% endblock %}

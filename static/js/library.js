@@ -62,3 +62,64 @@
 
   applyVisibility();
 })();
+
+/* Card click -> real Spotify playlist creation -> navigate to its
+   detail page. Reuses the existing /create-playlist route (now JSON)
+   and the exact qualifying-track/name/description it already computes
+   server-side -- nothing about the tracks or naming is decided here,
+   this is purely the click/loading/error UI around that call. */
+(function () {
+  const cardFrames = Array.from(document.querySelectorAll('.ctx-card-frame'));
+  if (cardFrames.length === 0) return;
+
+  // One shared flag, not per-card: while a playlist is being created,
+  // every card is inert -- avoids two creations racing at once.
+  let creating = false;
+
+  function setLoading(frame, isLoading, errorText) {
+    const overlay = frame.querySelector('.ctx-card-loading');
+    if (!overlay) return;
+    if (errorText) {
+      overlay.textContent = errorText;
+      overlay.hidden = false;
+      window.setTimeout(() => {
+        overlay.hidden = true;
+        overlay.textContent = 'Creating playlist...';
+      }, 2500);
+      return;
+    }
+    overlay.hidden = !isLoading;
+  }
+
+  cardFrames.forEach((frame) => {
+    frame.addEventListener('click', () => {
+      if (creating) return;
+      const contextId = frame.dataset.contextId;
+      if (!contextId) return;
+
+      creating = true;
+      setLoading(frame, true);
+
+      fetch('/create-playlist', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ context_id: contextId }),
+      })
+        .then((res) => res.json().then((data) => ({ ok: res.ok, data: data })))
+        .then(({ ok, data }) => {
+          if (!ok || !data.playlist_id) {
+            throw new Error((data && data.error) || 'playlist creation failed');
+          }
+          // Navigating away -- deliberately leave creating=true and the
+          // loading overlay showing, there is nothing left to reset.
+          window.location.href = '/playlist/' + data.playlist_id;
+        })
+        .catch((err) => {
+          console.error('Create playlist failed:', err);
+          creating = false;
+          setLoading(frame, false, "Couldn't create playlist -- try again");
+        });
+    });
+  });
+})();

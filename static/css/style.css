@@ -647,7 +647,7 @@ a { color: inherit; }
   max-width: 30rem;
 }
 
-/* ---- Context detail page ---- */
+/* ---- Playlist detail page (Stage 3) ---- */
 
 .ctx-detail__description {
   font-family: var(--font-mono);
@@ -659,9 +659,110 @@ a { color: inherit; }
   text-align: center;
 }
 
-/* Web Playback SDK connection status -- Stage 1-2 dev/test widget
-   only, not part of the designed card/poster system. Plain, small,
-   and clearly temporary (including the test-track button below). */
+.playlist-ready {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--tr-ink);
+  text-align: center;
+  margin: 0.75rem 0 0;
+}
+
+.playlist-summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 28rem;
+  margin: 2rem auto 0;
+}
+
+.playlist-summary__art {
+  width: 5rem;
+  height: 5rem;
+  flex-shrink: 0;
+  object-fit: cover;
+  border: 1px solid var(--tr-ink);
+  background: var(--tr-blue);
+}
+
+.playlist-summary__art--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playlist-summary__art--fallback svg {
+  width: 40%;
+  height: 40%;
+  color: var(--tr-bg);
+}
+
+.playlist-summary__meta {
+  font-family: var(--font-mono);
+}
+
+.playlist-summary__line {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--tr-ink);
+}
+
+.playlist-summary__open {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--tr-blue);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.playlist-summary__open:hover,
+.playlist-summary__open:focus-visible {
+  border-color: var(--tr-blue);
+}
+
+.playlist-tracks {
+  max-width: 28rem;
+  margin: 2rem auto 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--tr-ink);
+}
+
+.playlist-tracks__item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--tr-ink);
+  color: var(--tr-ink);
+}
+
+.playlist-tracks__index {
+  flex-shrink: 0;
+  width: 1.5rem;
+  opacity: 0.5;
+}
+
+.playlist-tracks__name {
+  font-weight: 700;
+}
+
+.playlist-tracks__name::after {
+  content: " — ";
+  font-weight: 400;
+  opacity: 0.5;
+}
+
+.playlist-tracks__artist {
+  opacity: 0.7;
+}
+
+/* Web Playback SDK connection status + transport controls -- plain,
+   small, and clearly not part of the designed card/poster system. */
 .player-status {
   margin: 2rem auto 0;
   padding: 0.75rem 1.25rem;
@@ -686,6 +787,13 @@ a { color: inherit; }
   color: var(--tr-ink);
 }
 
+.player-now-playing {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: var(--tr-ink);
+  opacity: 0.75;
+}
+
 .player-status[data-state="ready"] .player-status__value {
   color: var(--tr-blue);
 }
@@ -702,9 +810,14 @@ a { color: inherit; }
   color: #C0392B;
 }
 
-.player-test-btn {
-  display: block;
-  margin: 0.6rem auto 0;
+.player-controls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
+.player-control-btn {
   padding: 0.4rem 0.9rem;
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -716,13 +829,17 @@ a { color: inherit; }
   cursor: pointer;
 }
 
-.player-test-btn:disabled {
+.player-control-btn--play {
+  min-width: 5.5rem;
+}
+
+.player-control-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-.player-test-btn:not(:disabled):hover,
-.player-test-btn:not(:disabled):focus-visible {
+.player-control-btn:not(:disabled):hover,
+.player-control-btn:not(:disabled):focus-visible {
   background: var(--tr-ink);
   color: var(--tr-bg);
 }
@@ -774,14 +891,17 @@ a { color: inherit; }
    frames). Proportions below are derived from pixel-measuring those
    712x920 reference canvases (see conversation), expressed in cqw so
    the whole composition scales as one unit. .ctx-card-frame is the
-   link/form wrapper (an <a> when a playlist already exists, a <form>
-   otherwise) around the whole tilting card, including the footer --
-   so hovering tilts everything together as one designed poster, and
-   the only interactive element is the frame itself, per daisyUI's
-   own documented pattern for clickable hover-3d cards. ==== */
+   button wrapper around the whole tilting card, including the footer
+   -- so hovering tilts everything together as one designed poster,
+   and the only interactive element is the frame itself, per daisyUI's
+   own documented pattern for clickable hover-3d cards. It's a real
+   <button> (not an <a>) since clicking it creates a Spotify playlist
+   before any navigation happens -- see library.js. ==== */
 
 .ctx-card-frame {
+  position: relative;
   display: block;
+  width: 100%;
   aspect-ratio: 712 / 920;
   margin: 0;
   padding: 0;
@@ -789,11 +909,40 @@ a { color: inherit; }
   background: none;
   text-decoration: none;
   color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .ctx-card-frame .hover-3d {
   width: 100%;
   height: 100%;
+}
+
+/* Loading/error overlay shown while /create-playlist is in flight --
+   a sibling of .hover-3d, not a child, so it never disturbs the
+   required 9-child hover-3d grid or the card's own design. */
+.ctx-card-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10cqw;
+  background: rgba(240, 240, 235, 0.94);
+  border: 1cqw solid var(--tr-ink);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 4cqw;
+  color: var(--tr-ink);
+  text-align: center;
+}
+
+.ctx-card-loading[hidden] {
+  display: none;
 }
 
 .ctx-card {

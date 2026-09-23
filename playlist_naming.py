@@ -23,3 +23,17 @@ def generate_playlist_name(category: str, created_at: datetime) -> str:
     unchanged for any future category (e.g. Ghost/Return, if built).
     """
     return f"{category} - {created_at.day:02d} {_MONTH_ABBREVIATIONS[created_at.month]} {created_at.year}"
+
+
+def parse_playlist_name(name: str) -> dict:
+    """Reverse of generate_playlist_name(): split a name this module
+    produced back into its category and date-string parts.
+
+    Exists for a page that only has a playlist's name back from Spotify
+    to work with (Spotify's playlist object has no separate "category"
+    or "created date" field of its own) -- reads the same literal
+    " - " separator generate_playlist_name() writes, rather than
+    introducing a second, independent notion of the format.
+    """
+    category, _, date_str = name.partition(" - ")
+    return {"category": category, "date": date_str}

@@ -40,14 +40,18 @@
     {% for context in contexts %}
     {% set visual = CARD_VISUALS.get(context.label, {'number': loop.index, 'title': context.label|upper, 'artwork': true}) %}
     {#- The whole card -- footer included -- is ONE tilting composition,
-       AND the entire clickable surface: the outer <a> wraps the whole
-       .hover-3d (so hovering tilts everything together as one designed
-       poster, per daisyUI's own documented pattern for clickable
-       hover-3d cards -- "wrap the entire component in an anchor"),
-       navigating to this context's own detail page. Its first child is
-       an inert <span>, not a second interactive element. -#}
+       AND the entire clickable surface: the outer <button> wraps the
+       whole .hover-3d (so hovering tilts everything together as one
+       designed poster, per daisyUI's own documented pattern for
+       clickable hover-3d cards -- "wrap the entire component in an
+       anchor"; a <button> here instead of an <a> since the click
+       triggers real playlist creation before any navigation happens,
+       see library.js). Its first child is an inert <span>, not a
+       second interactive element. The loading overlay is a sibling
+       of .hover-3d, not inside it, so it never disturbs the required
+       9-child hover-3d grid. -#}
     <article class="lib-card-wrapper" data-index="{{ loop.index0 }}" data-category="{{ context.label }}">
-      <a href="{{ url_for('context_detail', context_id=context.context_id) }}" class="ctx-card-frame" aria-label="{{ visual.title }} -- view this context">
+      <button type="button" class="ctx-card-frame" data-context-id="{{ context.context_id }}" aria-label="{{ visual.title }} -- create and play this playlist">
         <div class="hover-3d">
           <span class="ctx-card">
             {% if context.label == 'Locked' %}{{ locked_scribble() }}
@@ -95,7 +99,8 @@
           <div></div><div></div><div></div><div></div>
           <div></div><div></div><div></div><div></div>
         </div>
-      </a>
+        <span class="ctx-card-loading" hidden>Creating playlist...</span>
+      </button>
     </article>
     {% endfor %}
   </div>
