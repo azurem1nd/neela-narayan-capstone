@@ -885,17 +885,17 @@ a { color: inherit; }
   color: var(--tr-ink);
 }
 
-/* Sits in the card's own bottom padding, slightly overlapping the
-   box's bottom-left corner and bleeding past the card's left edge --
-   see report re: scribble_1.svg being reused here rather than the
-   reference's exact (unsupplied) squiggle asset. z-index 0 (below the
-   box's z-index 1) so it never paints over track rows. */
+/* Sits in the card's own bottom padding, bleeding past both the
+   card's left edge and slightly past its right edge -- its own true
+   (2026-09-25) asset, sized for this page's full card width rather
+   than the small-corner scribble_1 approximation used before. z-index
+   0 (below the box's z-index 1) so it never paints over track rows. */
 .playlist-card__scribble {
   display: block;
   position: relative;
   z-index: 0;
-  width: clamp(11rem, 30vw, 19rem);
-  margin: -0.6rem 0 -0.5rem -4%;
+  width: 108%;
+  margin: -0.5rem 0 -1rem -4%;
   pointer-events: none;
 }
 

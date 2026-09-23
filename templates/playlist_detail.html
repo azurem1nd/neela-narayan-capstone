@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_card_graphics.html" import scribble_1 %}
+{% from "_card_graphics.html" import playlist_scribble %}
 
 {% block title %}{{ playlist.name }} — Track Record{% endblock %}
 
@@ -64,7 +64,7 @@
     {% endif %}
   </div>
 
-  <span class="playlist-card__scribble" aria-hidden="true">{{ scribble_1() }}</span>
+  <span class="playlist-card__scribble" aria-hidden="true">{{ playlist_scribble() }}</span>
 
   <a class="playlist-card__cta" href="{{ playlist.url }}" target="_blank" rel="noopener">play on spotify</a>
 </section>
