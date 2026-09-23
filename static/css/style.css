@@ -502,7 +502,8 @@ a { color: inherit; }
    border-top doubles as the reference's thin divider line, so it
    always sits flush against the ticker regardless of its height. */
 
-.landing-page .ticker {
+.landing-page .ticker,
+.library-page .ticker {
   position: fixed;
   left: 0;
   right: 0;
@@ -517,13 +518,22 @@ a { color: inherit; }
   z-index: 10;
 }
 
-.landing-page .ticker__track {
+/* .library-page redefines --tr-pink as a bright category-adjacent
+   accent (used elsewhere), not the dark ticker tone the playlist-page
+   reference shows -- --tr-ink is the correct dark value there. */
+.library-page .ticker {
+  background: var(--tr-ink);
+}
+
+.landing-page .ticker__track,
+.library-page .ticker__track {
   display: flex;
   width: max-content;
   animation: ticker-scroll 120s linear infinite;
 }
 
-.landing-page .ticker__seq {
+.landing-page .ticker__seq,
+.library-page .ticker__seq {
   display: inline-block;
   white-space: nowrap;
   font-family: var(--font-mono);
@@ -539,7 +549,8 @@ a { color: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-page .ticker__track { animation: none; }
+  .landing-page .ticker__track,
+  .library-page .ticker__track { animation: none; }
 }
 
 /* ---------- Confirmation ---------- */
@@ -671,161 +682,189 @@ a { color: inherit; }
   max-width: 30rem;
 }
 
-/* ---- Playlist detail page (Stage 3) ---- */
+/* ---- Playlist detail page (redesigned 2026-09-24, per
+   trigger_playlist.png -- one shared template/stylesheet for every
+   category, --ctx-accent switched by data-category exactly like the
+   library grid cards.) ---- */
 
-.ctx-detail__description {
+.playlist-card {
+  position: relative;
+  background: var(--ctx-accent, var(--tr-green));
+  border: 2px solid var(--tr-ink);
+  padding: clamp(1.25rem, 3.2vw, 2.25rem) clamp(1.25rem, 3vw, 2.25rem) clamp(2.5rem, 6vw, 4rem);
+  margin: 0 0 clamp(2rem, 5vw, 3rem);
+}
+
+.playlist-card[data-category="Companion"] { --ctx-accent: var(--ctx-companion); }
+.playlist-card[data-category="Trigger"] { --ctx-accent: var(--ctx-trigger); }
+.playlist-card[data-category="Locked"] { --ctx-accent: var(--ctx-locked); }
+.playlist-card[data-category="Spiral"] { --ctx-accent: var(--ctx-spiral); }
+.playlist-card[data-category="Exploration"] { --ctx-accent: var(--ctx-exploration); }
+.playlist-card[data-category="Glimpse"] { --ctx-accent: var(--ctx-glimpse); }
+
+.playlist-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: clamp(0.75rem, 2.5vw, 1.75rem);
+  row-gap: 0.35rem;
+}
+
+.playlist-card__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(2rem, 6vw, 3.75rem);
+  line-height: 1;
+  color: var(--tr-ink);
+  margin: 0;
+}
+
+.playlist-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.75rem, 2.2vw, 1.5rem);
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.05rem, 2.2vw, 1.4rem);
+  color: var(--tr-ink);
+}
+
+.playlist-card__desc {
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1.6vw, 1.05rem);
   line-height: 1.6;
   color: var(--tr-ink);
-  max-width: 32rem;
-  margin: 0 auto;
-  text-align: center;
+  margin: clamp(0.75rem, 2vw, 1.25rem) 0 0;
 }
 
-.playlist-ready {
+.playlist-card__box {
+  position: relative;
+  z-index: 1;
+  background: var(--tr-bg);
+  border: 2px solid var(--tr-ink);
+  margin-top: clamp(1.25rem, 3vw, 2rem);
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  max-height: 27rem;
+  overflow-y: auto;
+}
+
+.playlist-card__box-error {
   font-family: var(--font-mono);
   font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  line-height: 1.6;
   color: var(--tr-ink);
   text-align: center;
-  margin: 0.75rem 0 0;
-}
-
-.playlist-summary {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  max-width: 28rem;
-  margin: 2rem auto 0;
-}
-
-.playlist-summary__art {
-  width: 5rem;
-  height: 5rem;
-  flex-shrink: 0;
-  object-fit: cover;
-  border: 1px solid var(--tr-ink);
-  background: var(--tr-blue);
-}
-
-.playlist-summary__art--fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.playlist-summary__art--fallback svg {
-  width: 40%;
-  height: 40%;
-  color: var(--tr-bg);
-}
-
-.playlist-summary__meta {
-  font-family: var(--font-mono);
-}
-
-.playlist-summary__line {
   margin: 0;
-  font-size: 0.9rem;
-  color: var(--tr-ink);
 }
 
-.playlist-summary__open {
-  display: inline-block;
-  margin-top: 0.35rem;
-  font-size: 0.9rem;
-  font-weight: 700;
+.playlist-card__box-error a {
   color: var(--tr-blue);
-  text-decoration: none;
-  border-bottom: 2px solid transparent;
 }
 
-.playlist-summary__open:hover,
-.playlist-summary__open:focus-visible {
-  border-color: var(--tr-blue);
-}
-
-.playlist-tracks {
-  max-width: 28rem;
-  margin: 2rem auto 0;
+.playlist-card__tracks {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.1rem, 2.6vw, 1.8rem);
+  margin: 0;
   padding: 0;
   list-style: none;
   font-family: var(--font-mono);
-  font-size: 0.85rem;
-  border-top: 1px solid var(--tr-ink);
 }
 
-.playlist-tracks__item {
+.playlist-card__track {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--tr-ink);
+  align-items: flex-start;
+  gap: clamp(0.9rem, 2vw, 1.5rem);
   color: var(--tr-ink);
 }
 
-.playlist-tracks__index {
+.playlist-card__track-art {
   flex-shrink: 0;
-  width: 1.5rem;
-  opacity: 0.5;
-}
-
-.playlist-tracks__art {
-  flex-shrink: 0;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: clamp(3.5rem, 8vw, 6rem);
+  height: clamp(3.5rem, 8vw, 6rem);
   object-fit: cover;
   background: var(--tr-blue);
 }
 
-.playlist-tracks__art--fallback {
+.playlist-card__track-art--fallback {
   display: block;
+  background: #D9D9D9;
 }
 
-.playlist-tracks__info {
+.playlist-card__track-info {
   display: flex;
   flex-direction: column;
   min-width: 0;
   flex: 1;
+  padding-top: 0.15rem;
 }
 
-.playlist-tracks__name {
+.playlist-card__track-name {
   font-weight: 700;
+  font-size: clamp(0.85rem, 1.6vw, 1rem);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.playlist-tracks__by {
+.playlist-card__track-by {
   opacity: 0.7;
-  font-size: 0.8rem;
+  font-size: clamp(0.78rem, 1.4vw, 0.9rem);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.playlist-tracks__duration {
+.playlist-card__track-duration {
   flex-shrink: 0;
-  opacity: 0.6;
-  font-size: 0.8rem;
-}
-
-.playlist-tracks-error {
-  max-width: 28rem;
-  margin: 2rem auto 0;
-  padding: 1rem;
-  border: 1px solid var(--tr-ink);
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  line-height: 1.5;
+  padding-top: 0.15rem;
+  font-size: clamp(0.78rem, 1.4vw, 0.9rem);
   color: var(--tr-ink);
-  text-align: center;
 }
 
-.playlist-tracks-error a {
-  color: var(--tr-blue);
+/* Sits in the card's own bottom padding, slightly overlapping the
+   box's bottom-left corner and bleeding past the card's left edge --
+   see report re: scribble_1.svg being reused here rather than the
+   reference's exact (unsupplied) squiggle asset. z-index 0 (below the
+   box's z-index 1) so it never paints over track rows. */
+.playlist-card__scribble {
+  display: block;
+  position: relative;
+  z-index: 0;
+  width: clamp(11rem, 30vw, 19rem);
+  margin: -0.6rem 0 -0.5rem -4%;
+  pointer-events: none;
+}
+
+.playlist-card__scribble svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--tr-ink);
+}
+
+.playlist-card__cta {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: max-content;
+  margin: clamp(1.25rem, 3vw, 2rem) 0 0 auto;
+  padding: 0.7em 1.8em;
+  border-radius: 999px;
+  background: var(--tr-bg);
+  color: var(--tr-ink);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(0.85rem, 1.6vw, 1rem);
+  text-decoration: none;
+}
+
+.playlist-card__cta:hover,
+.playlist-card__cta:focus-visible {
+  background: var(--tr-ink);
+  color: var(--tr-bg);
 }
 
 /* Web Playback SDK connection status + transport controls -- plain,
