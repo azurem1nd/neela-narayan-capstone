@@ -1149,17 +1149,39 @@ a { color: inherit; }
   text-align: center;
 }
 
-/* "play on spotify" CTA (Trigger/Locked/Spiral) -- self-colored pill
-   asset (cta_cards.svg), own true scale against the 712-wide
-   reference (243/712 = 34.13cqw), inert content inside the card's
-   existing big clickable button, not a second interactive element. */
+/* "see playlist" CTA, all 6 categories -- pill shape/color kept from
+   the original cta_cards.svg asset (its rect only, see the macro's
+   comment for why the text moved to a live overlay), sized against
+   the 712-wide reference. Inert content inside the card's existing
+   big clickable button, not a second interactive element. */
 .ctx-card__cta {
   position: relative;
   z-index: 1;
   display: block;
   width: 39cqw;
-  height: auto;
+  aspect-ratio: 243 / 42;
   margin: 14.5cqw auto 0;
+}
+
+.ctx-card__cta-bg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ctx-card__cta-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 3.6cqw;
+  color: #EEEFE9;
+  white-space: nowrap;
 }
 
 .sr-only {
