@@ -61,11 +61,11 @@ MIN_DISTINCT_TRACKS_FOR_EVIDENCE = 2
 # module's own docstring / _diversity_fallback() (Locked/Exploration/Glimpse)
 # -- update both places together if a definition changes.
 CATEGORY_DESCRIPTIONS = {
-    "Trigger": "You played this on repeat for a day, then just... moved on.",
-    "Companion": "This one keeps showing up. You never really stopped playing it.",
-    "Spiral": "You hit repeat on this one, hard, for a little while.",
-    "Locked": "A few artists, over and over — you were locked in.",
-    "Exploration": "You wandered — lots of different tracks, lots of different artists, no real pattern.",
+    "Trigger": "You repeated a song several times, but only within the same day.",
+    "Companion": "You returned to a song across different days.",
+    "Spiral": "You played a song intensely and repeatedly in a short period.",
+    "Locked": "You stayed with a smaller set of artists and tracks, creating a familiar listening loop.",
+    "Exploration": "You moved across many different artists and tracks without one strong repetition pattern.",
     "Glimpse": "A flicker, not yet a pattern.",
 }
 

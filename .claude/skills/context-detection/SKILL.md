@@ -114,7 +114,7 @@ def build_contexts(plays):
     "context_id": 2,
     "label": "Companion",
     "description": "Companion - 2 tracks",
-    "category_description": "This one keeps showing up. You never really stopped playing it.",
+    "category_description": "You returned to a song across different days.",
     "track_ids": ["X", "Y", "Z"],
     "playlist_track_ids": ["X", "Y"],
     "track_count": 2,
