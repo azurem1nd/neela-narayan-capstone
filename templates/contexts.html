@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_card_graphics.html" import squiggle, companion_graphic, trigger_graphic, locked_graphic, spiral_graphic, explore_graphic, glimpse_graphic, locked_scribble, spiral_scribble, trackrecord_wordmark %}
+{% from "_card_graphics.html" import squiggle, companion_graphic, trigger_graphic, locked_graphic, spiral_graphic, explore_graphic, glimpse_graphic, locked_scribble, spiral_scribble, trackrecord_wordmark, explore_number, glimpse_number %}
 
 {% block title %}My Music Library — Track Record{% endblock %}
 
@@ -63,7 +63,10 @@
             {% endif %}
 
             <span class="ctx-card__header">
-              <span class="ctx-card__number">{{ visual.number }}</span>
+              {% if context.label == 'Exploration' %}{{ explore_number() }}
+              {% elif context.label == 'Glimpse' %}{{ glimpse_number() }}
+              {% else %}<span class="ctx-card__number">{{ visual.number }}</span>
+              {% endif %}
               <span class="ctx-card__heading">
                 <span class="ctx-card__title">{{ visual.title }}</span>
                 <span class="ctx-card__meta-row">{{ today_display }} · {{ context.track_count if context.track_count is not none else 0 }} track{{ 's' if context.track_count != 1 }}</span>

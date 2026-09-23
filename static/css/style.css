@@ -557,8 +557,8 @@ a { color: inherit; }
   --ctx-trigger: #BEE860;
   --ctx-locked: #9591F8;
   --ctx-spiral: #CFB23C;
-  --ctx-exploration: #BEE860;
-  --ctx-glimpse: #9591F8;
+  --ctx-exploration: #649AED;
+  --ctx-glimpse: #E57BA1;
 
   background: var(--tr-page-bg);
   color: var(--tr-ink);
@@ -782,6 +782,21 @@ a { color: inherit; }
   align-self: start;
   padding-top: 8cqw;
   text-align: center;
+}
+
+/* Self-colored vector numeral (Explore/Glimpse only) -- sized/
+   positioned to land in the exact same spot the shared text numeral
+   occupies for every other category (measured: ~4.3cqw from the top,
+   ~3.3cqw from the left, ~21cqw tall). Width is each asset's own
+   aspect ratio (height set, width auto). */
+.ctx-card__number-svg {
+  grid-area: 1 / 1;
+  justify-self: start;
+  align-self: start;
+  display: block;
+  height: 21cqw;
+  width: auto;
+  margin: -0.7cqw 0 0 -1.7cqw;
 }
 
 /* Centering against the full card width is correct for four of the
