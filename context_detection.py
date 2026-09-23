@@ -66,7 +66,7 @@ CATEGORY_DESCRIPTIONS = {
     "Spiral": "You played a song intensely and repeatedly in a short period.",
     "Locked": "You stayed with a smaller set of artists and tracks, creating a familiar listening loop.",
     "Exploration": "You moved across many different artists and tracks without one strong repetition pattern.",
-    "Glimpse": "A flicker, not yet a pattern.",
+    "Glimpse": "A fleeting listen, with too little repetition to reveal a pattern.",
 }
 
 

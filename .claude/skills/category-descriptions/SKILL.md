@@ -34,7 +34,7 @@ CATEGORY_DESCRIPTIONS = {
     "Spiral": "You played a song intensely and repeatedly in a short period.",
     "Locked": "You stayed with a smaller set of artists and tracks, creating a familiar listening loop.",
     "Exploration": "You moved across many different artists and tracks without one strong repetition pattern.",
-    "Glimpse": "A flicker, not yet a pattern.",
+    "Glimpse": "A fleeting listen, with too little repetition to reveal a pattern.",
 }
 ```
 
@@ -66,8 +66,9 @@ contexts.append({
   metrics leaking into the text (never "play_count," "active_days,"
   "distinct_artist_count," "≥15%," etc.) -- the *why* behind a category
   lives in the technical skills; this text is the plain-language result.
-- **Sentence fragments are fine** ("A flicker, not yet a pattern.") --
-  matches the existing six, which mix full sentences and fragments freely.
+- **Sentence fragments are fine** ("A fleeting listen, with too little
+  repetition to reveal a pattern.") -- matches the existing six, which
+  mix full sentences and fragments freely.
 - **Short.** One sentence or fragment, matching the length of the
   existing six (roughly 6-16 words) -- not a definition, a description.
 - **Describe the felt pattern, not the mechanism** -- "you were locked
@@ -81,7 +82,7 @@ contexts.append({
 | Spiral | You played a song intensely and repeatedly in a short period. |
 | Locked | You stayed with a smaller set of artists and tracks, creating a familiar listening loop. |
 | Exploration | You moved across many different artists and tracks without one strong repetition pattern. |
-| Glimpse | A flicker, not yet a pattern. |
+| Glimpse | A fleeting listen, with too little repetition to reveal a pattern. |
 
 ## Known Limitations
 - **No fallback for a missing key.** `CATEGORY_DESCRIPTIONS[label]` is a
