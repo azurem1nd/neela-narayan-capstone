@@ -7,7 +7,6 @@ API instead of listening_history.db) and the web/session layer around it.
 """
 
 import os
-import time
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
@@ -90,6 +89,17 @@ def fetch_recent_plays(sp, max_plays: int = 300) -> list[dict]:
         before = cursors["before"]
     plays.sort(key=lambda p: p["played_at"])
     return plays
+
+
+def _format_duration(duration_ms) -> str:
+    """"m:ss" from a track's duration_ms, for display on the playlist
+    detail page only -- purely presentational, not used anywhere in
+    classification/selection."""
+    if not isinstance(duration_ms, (int, float)) or duration_ms < 0:
+        return ""
+    total_seconds = int(duration_ms) // 1000
+    minutes, seconds = divmod(total_seconds, 60)
+    return f"{minutes}:{seconds:02d}"
 
 
 @app.route("/")
@@ -182,36 +192,45 @@ def playlist_detail(playlist_id):
             # library.
             return redirect(url_for("analyze"))
 
-        if "tracks" not in playlist:
-            # DIAGNOSED: this page is reached by navigating here within
-            # ~milliseconds of actually creating the playlist (see
-            # library.js) -- Spotify's read path for a brand-new
-            # playlist can momentarily return a partial object (name/
-            # owner present, tracks not yet populated on whichever
-            # backend served this read) before catching up. One short
-            # retry covers that without masking a genuinely different
-            # shape problem -- confirmed via the exact keys Spotify
-            # actually returned (safe to log: playlist metadata, never
-            # a token).
-            print(f"playlist_detail: 'tracks' missing on first fetch for {playlist_id}, "
-                  f"keys were {sorted(playlist.keys())} -- retrying once")
-            time.sleep(1)
-            try:
-                playlist = sp.playlist(playlist_id)
-            except SpotifyException:
-                return redirect(url_for("analyze"))
-
         name_parts = parse_playlist_name(playlist["name"])
         images = playlist.get("images") or []
-        tracks = []
-        for item in playlist["tracks"]["items"]:
-            track = item.get("track")
-            if track is None:
-                continue
-            tracks.append({
-                "name": track.get("name"),
-                "artist": ", ".join(a["name"] for a in track.get("artists", [])) or "Unknown",
-            })
+
+        # DIAGNOSED (was the real cause of the earlier KeyError, not an
+        # auth/scope or timing issue): Spotify's playlist object now
+        # exposes its contents under "items" (a paging object -- total
+        # + an "items" array of PlaylistTrackObject, each holding the
+        # track under "item"); "tracks" is the same shape but
+        # documented deprecated and, empirically, no longer populated.
+        # Guarded with isinstance checks rather than a bare key lookup,
+        # so a genuinely malformed/missing response degrades to "the
+        # track list couldn't be loaded" instead of a KeyError -- never
+        # silently reported as "0 tracks" (that would misrepresent a
+        # retrieval failure as an empty playlist).
+        items_paging = playlist.get("items")
+        tracks = None
+        track_count = None
+        if isinstance(items_paging, dict) and isinstance(items_paging.get("items"), list):
+            tracks = []
+            for entry in items_paging["items"]:
+                item = (entry or {}).get("item")
+                if not item or item.get("type") == "episode":
+                    # Null (removed since being added) or a podcast
+                    # episode -- "item" is documented oneOf Track/
+                    # Episode; this app only ever adds tracks, but
+                    # don't assume the shape of something it didn't
+                    # add itself.
+                    continue
+                album = item.get("album") or {}
+                album_images = album.get("images") or []
+                artists = item.get("artists") or []
+                tracks.append({
+                    "name": item.get("name") or "Unknown track",
+                    "artist": ", ".join(a["name"] for a in artists) or "Unknown",
+                    "album": album.get("name") or "",
+                    "image_url": album_images[-1]["url"] if album_images else None,
+                    "duration": _format_duration(item.get("duration_ms")),
+                })
+            track_count = items_paging.get("total", len(tracks))
 
         return render_template(
             "playlist_detail.html",
@@ -221,7 +240,7 @@ def playlist_detail(playlist_id):
                 "category": name_parts["category"],
                 "date": name_parts["date"],
                 "description": playlist.get("description") or "",
-                "track_count": playlist["tracks"]["total"],
+                "track_count": track_count,
                 "image_url": images[0]["url"] if images else None,
                 "url": playlist["external_urls"]["spotify"],
                 "tracks": tracks,

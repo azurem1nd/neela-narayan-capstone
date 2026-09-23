@@ -735,6 +735,7 @@ a { color: inherit; }
 
 .playlist-tracks__item {
   display: flex;
+  align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 0;
   border-bottom: 1px solid var(--tr-ink);
@@ -747,18 +748,60 @@ a { color: inherit; }
   opacity: 0.5;
 }
 
+.playlist-tracks__art {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: cover;
+  background: var(--tr-blue);
+}
+
+.playlist-tracks__art--fallback {
+  display: block;
+}
+
+.playlist-tracks__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
 .playlist-tracks__name {
   font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.playlist-tracks__name::after {
-  content: " — ";
-  font-weight: 400;
-  opacity: 0.5;
-}
-
-.playlist-tracks__artist {
+.playlist-tracks__by {
   opacity: 0.7;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlist-tracks__duration {
+  flex-shrink: 0;
+  opacity: 0.6;
+  font-size: 0.8rem;
+}
+
+.playlist-tracks-error {
+  max-width: 28rem;
+  margin: 2rem auto 0;
+  padding: 1rem;
+  border: 1px solid var(--tr-ink);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--tr-ink);
+  text-align: center;
+}
+
+.playlist-tracks-error a {
+  color: var(--tr-blue);
 }
 
 /* Web Playback SDK connection status + transport controls -- plain,
