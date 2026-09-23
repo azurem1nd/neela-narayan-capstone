@@ -2,6 +2,7 @@
 .env
 .venv/
 listening_history.db
+track_record.db
 pull.log
 __pycache__/
 flask_session/

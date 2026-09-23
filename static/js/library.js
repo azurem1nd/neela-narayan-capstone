@@ -63,31 +63,64 @@
   applyVisibility();
 })();
 
-/* Card click -> real Spotify playlist creation -> navigate to its
-   detail page. Reuses the existing /create-playlist route (now JSON)
-   and the exact qualifying-track/name/description it already computes
-   server-side -- nothing about the tracks or naming is decided here,
-   this is purely the click/loading/error UI around that call. */
+/* Card click -> resolve_context_playlist() (reuse/update/create,
+   see playlist_persistence.py) -> navigate to its detail page. Reuses
+   the existing /create-playlist route (now JSON) and the exact
+   qualifying-track/name/description it already computes server-side
+   -- nothing about the tracks, naming, or reuse-vs-create decision is
+   made here, this is purely the click/loading/error UI around that
+   call. */
 (function () {
   const cardFrames = Array.from(document.querySelectorAll('.ctx-card-frame'));
   if (cardFrames.length === 0) return;
 
-  // One shared flag, not per-card: while a playlist is being created,
-  // every card is inert -- avoids two creations racing at once.
+  // One shared flag, not per-card: while a resolve is in flight, every
+  // card is inert -- avoids two racing at once.
   let creating = false;
 
-  function setLoading(frame, isLoading, errorText) {
+  // sessionStorage (not a JS variable) so this survives a full page
+  // reload from clicking browser back to the library and clicking the
+  // same card again in the same window/tab, while staying scoped to
+  // this one tab (new tab/window starts fresh) and never persisting
+  // across different users on a shared machine the way localStorage
+  // would. This is purely a label hint for the loading overlay -- the
+  // backend (playlist_persistence.py) is the actual source of truth
+  // for whether a playlist already exists; this can't get "wrong" in
+  // a way that breaks anything, only in a way that shows the less
+  // accurate of two harmless loading labels for one click.
+  const RESOLVED_KEY = 'trackrecord:resolvedContexts';
+
+  function hasResolvedBefore(contextId) {
+    try {
+      const raw = window.sessionStorage.getItem(RESOLVED_KEY);
+      return !!raw && JSON.parse(raw).includes(contextId);
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function markResolved(contextId) {
+    try {
+      const raw = window.sessionStorage.getItem(RESOLVED_KEY);
+      const ids = raw ? JSON.parse(raw) : [];
+      if (!ids.includes(contextId)) {
+        ids.push(contextId);
+        window.sessionStorage.setItem(RESOLVED_KEY, JSON.stringify(ids));
+      }
+    } catch (err) {
+      // Private-browsing/storage-blocked -- loading label just won't
+      // say "opening" on a later visit; not worth failing the click.
+    }
+  }
+
+  function loadingLabel(contextId) {
+    return hasResolvedBefore(contextId) ? 'Opening your playlist...' : 'Creating playlist...';
+  }
+
+  function setLoading(frame, isLoading, text) {
     const overlay = frame.querySelector('.ctx-card-loading');
     if (!overlay) return;
-    if (errorText) {
-      overlay.textContent = errorText;
-      overlay.hidden = false;
-      window.setTimeout(() => {
-        overlay.hidden = true;
-        overlay.textContent = 'Creating playlist...';
-      }, 2500);
-      return;
-    }
+    if (text) overlay.textContent = text;
     overlay.hidden = !isLoading;
   }
 
@@ -98,7 +131,7 @@
       if (!contextId) return;
 
       creating = true;
-      setLoading(frame, true);
+      setLoading(frame, true, loadingLabel(contextId));
 
       fetch('/create-playlist', {
         method: 'POST',
@@ -117,6 +150,7 @@
               : ` [${status}] ${(data && data.error) || 'no error detail returned'}`;
             throw new Error('playlist creation failed --' + detail);
           }
+          markResolved(contextId);
           // Navigating away -- deliberately leave creating=true and the
           // loading overlay showing, there is nothing left to reset.
           window.location.href = '/playlist/' + data.playlist_id;
@@ -124,7 +158,8 @@
         .catch((err) => {
           console.error('Create playlist failed:', err);
           creating = false;
-          setLoading(frame, false, "Couldn't create playlist -- try again");
+          setLoading(frame, true, "Couldn't create playlist -- try again");
+          window.setTimeout(() => setLoading(frame, false), 2500);
         });
     });
   });

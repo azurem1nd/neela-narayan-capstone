@@ -21,7 +21,7 @@ from spotipy.oauth2 import SpotifyOAuth
 
 from context_detection import build_contexts, consolidate_by_category
 from playlist_naming import generate_playlist_name, parse_playlist_name
-from spotify_playlist import create_playlist
+from playlist_persistence import init_db, resolve_context_playlist
 
 REPO_DIR = Path(__file__).resolve().parent
 load_dotenv(REPO_DIR / ".env")
@@ -32,6 +32,7 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ["FLASK_SECRET_KEY"]
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
+init_db()
 
 
 def get_spotify_oauth():
@@ -287,19 +288,27 @@ def spotify_token():
 
 @app.route("/create-playlist", methods=["POST"])
 def create_playlist_route():
-    """Create a real Spotify playlist from one library card, called via
-    fetch() from library.js's card click handler -- JSON in, JSON out.
+    """Resolve one library card click to a Spotify playlist, called
+    via fetch() from library.js's card click handler -- JSON in, JSON
+    out. Despite the route name (kept stable so the frontend contract
+    -- POST {context_id}, read back {playlist_id} -- didn't need to
+    change), this no longer unconditionally creates a playlist: see
+    playlist_persistence.py / .claude/skills/playlist_persistence/SKILL.md.
+    A first click for a user+context creates one; a later click
+    reuses or updates that same playlist depending on whether the
+    qualifying track set has meaningfully changed.
 
     Re-fetches and re-derives contexts fresh, same as /playlist/<id>'s
     caller relies on and as documented in context-detection/SKILL.md
-    Known Limitation #3 -- this app has no persistence, so "the exact
-    qualifying track IDs already calculated for that context" are
-    recomputed from the user's current listening history rather than
-    trusted from the client, then used completely unfiltered/unedited
-    (match["playlist_track_ids"]) for the tracks actually sent to
-    Spotify. The playlist name is generated fresh here via the same
-    generate_playlist_name() every other route uses -- not supplied by
-    the client -- so it's always byte-for-byte the real, current name.
+    Known Limitation #3 -- "the exact qualifying track IDs already
+    calculated for that context" are recomputed from the user's
+    current listening history rather than trusted from the client,
+    then passed to resolve_context_playlist() completely
+    unfiltered/unedited (match["playlist_track_ids"]). The playlist
+    name is generated fresh here via the same generate_playlist_name()
+    every other route uses -- not supplied by the client -- so it's
+    always byte-for-byte the real, current name (used only if this
+    resolves to actually creating a playlist).
     """
     data = request.get_json(silent=True) or {}
     context_id = data.get("context_id")
@@ -329,13 +338,18 @@ def create_playlist_route():
 
         now = datetime.now(timezone.utc)
         playlist_name = generate_playlist_name(match["label"], now)
+        user_id = sp.current_user()["id"]
 
-        result = create_playlist(
+        result = resolve_context_playlist(
             sp,
+            user_id,
+            context_id,
             match["playlist_track_ids"],
             playlist_name,
             description=match["category_description"],
         )
+        if result["action"] == "error":
+            return jsonify({"error": result["reason"]}), 400
         return jsonify(result)
     except Exception as exc:
         # TEMPORARY, for diagnosing a live 500 -- a bare 500 with no

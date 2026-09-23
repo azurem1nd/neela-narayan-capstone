@@ -30,6 +30,8 @@ Creating a playlist and populating it is **two separate API calls** — never as
 
 **Optional playlist description:** `current_user_playlist_create`/`user_playlist_create` both accept a `description` kwarg (verified against the installed spotipy 2.26.0's signature) — pass it at creation time, it can't be added after the fact via `playlist_add_items`. The canonical wrapper, `spotify_playlist.py::create_playlist(sp, track_ids, name, description="")`, exposes this — e.g. `context-detection`'s `CATEGORY_DESCRIPTIONS` text is passed through as a context's description when `/create-playlist` materializes it, so the playlist itself explains what the category means, not just its name.
 
+**Updating an already-created playlist's tracks (not creating a new one):** `spotify_playlist.py::update_playlist(sp, playlist_id, track_ids)` wraps `sp.playlist_replace_items(playlist_id, track_ids)` — replaces a playlist's entire contents in one call, same playlist id/URL, no separate remove-then-add needed. Added 2026-09-25 for `playlist_persistence.py`, which decides when an existing playlist should be updated in place instead of a duplicate being created — see `playlist_persistence/SKILL.md`. This module still only owns the raw create/add/replace calls themselves, never the decision of *which* to use.
+
 ## Naming Convention (for repeated top-tracks test runs)
 
 When this skill is used to materialize a snapshot of a user's *current* top tracks (as in `experiments/gemini-agent-test/agent_test.py`), name the playlist deterministically as:
