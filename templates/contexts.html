@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_card_graphics.html" import squiggle, companion_graphic, trigger_graphic, locked_graphic, spiral_graphic, explore_graphic, glimpse_graphic, locked_scribble, spiral_scribble, trackrecord_wordmark, explore_number, glimpse_number %}
+{% from "_card_graphics.html" import squiggle, companion_graphic, explore_graphic, glimpse_graphic, trackrecord_wordmark, explore_number, glimpse_number, trigger_number, locked_number, spiral_number, trigger_pattern, locked_pattern, spiral_pattern, scribble_1, cta_play_on_spotify %}
 
 {% block title %}My Music Library — Track Record{% endblock %}
 
@@ -30,11 +30,16 @@
 {% set CARD_VISUALS = {
   'Companion':   {'number': 3, 'title': 'COMPANION', 'artwork': true},
   'Trigger':     {'number': 1, 'title': 'TRIGGER',   'artwork': false},
-  'Locked':      {'number': 2, 'title': 'LOCKED',    'artwork': true},
-  'Spiral':      {'number': 4, 'title': 'SPIRAL',    'artwork': true},
+  'Locked':      {'number': 2, 'title': 'LOCKED',    'artwork': false},
+  'Spiral':      {'number': 4, 'title': 'SPIRAL',    'artwork': false},
   'Exploration': {'number': 5, 'title': 'EXPLORE',   'artwork': true},
   'Glimpse':     {'number': 6, 'title': 'GLIMPSE',   'artwork': true},
 } %}
+{#- Redesigned this round (2026-09-24): Trigger/Locked/Spiral get the
+   new independent-number + centered-heading + CTA-button layout, per
+   the supplied reference designs. Companion/Exploration/Glimpse keep
+   today's shared-row layout until their own redesign pass. -#}
+{% set REDESIGNED = ['Trigger', 'Locked', 'Spiral'] %}
 <div class="lib-stage" id="lib-stage" data-view="single">
   <div class="lib-cards" id="lib-cards">
     {% for context in contexts %}
@@ -54,30 +59,42 @@
       <button type="button" class="ctx-card-frame" data-context-id="{{ context.context_id }}" aria-label="{{ visual.title }} -- create and play this playlist">
         <div class="hover-3d">
           <span class="ctx-card">
-            {% if context.label == 'Locked' %}{{ locked_scribble() }}
-            {% elif context.label == 'Spiral' %}{{ spiral_scribble() }}
+            {% if context.label in REDESIGNED %}{{ scribble_1() }}
             {% else %}{{ squiggle() }}
             {% endif %}
             {% if context.label == 'Companion' %}{{ companion_graphic() }}
-            {% elif context.label == 'Trigger' %}{{ trigger_graphic() }}
-            {% elif context.label == 'Locked' %}{{ locked_graphic() }}
-            {% elif context.label == 'Spiral' %}{{ spiral_graphic() }}
+            {% elif context.label == 'Trigger' %}{{ trigger_pattern() }}
+            {% elif context.label == 'Locked' %}{{ locked_pattern() }}
+            {% elif context.label == 'Spiral' %}{{ spiral_pattern() }}
             {% elif context.label == 'Exploration' %}{{ explore_graphic() }}
             {% elif context.label == 'Glimpse' %}{{ glimpse_graphic() }}
             {% endif %}
 
-            <span class="ctx-card__header">
-              {% if context.label == 'Exploration' %}{{ explore_number() }}
-              {% elif context.label == 'Glimpse' %}{{ glimpse_number() }}
-              {% else %}<span class="ctx-card__number">{{ visual.number }}</span>
+            {% if context.label in REDESIGNED %}
+              {% if context.label == 'Trigger' %}{{ trigger_number() }}
+              {% elif context.label == 'Locked' %}{{ locked_number() }}
+              {% elif context.label == 'Spiral' %}{{ spiral_number() }}
               {% endif %}
-              <span class="ctx-card__heading">
+              <span class="ctx-card__heading--redesigned">
                 <span class="ctx-card__title">{{ visual.title }}</span>
                 <span class="ctx-card__meta-row">{{ today_display }} · {{ context.track_count if context.track_count is not none else 0 }} track{{ 's' if context.track_count != 1 }}</span>
               </span>
-            </span>
+            {% else %}
+              <span class="ctx-card__header">
+                {% if context.label == 'Exploration' %}{{ explore_number() }}
+                {% elif context.label == 'Glimpse' %}{{ glimpse_number() }}
+                {% else %}<span class="ctx-card__number">{{ visual.number }}</span>
+                {% endif %}
+                <span class="ctx-card__heading">
+                  <span class="ctx-card__title">{{ visual.title }}</span>
+                  <span class="ctx-card__meta-row">{{ today_display }} · {{ context.track_count if context.track_count is not none else 0 }} track{{ 's' if context.track_count != 1 }}</span>
+                </span>
+              </span>
+            {% endif %}
 
             <span class="ctx-card__desc">{{ context.category_description or "No description available for this one yet." }}</span>
+
+            {% if context.label in REDESIGNED %}{{ cta_play_on_spotify() }}{% endif %}
 
             {% if visual.artwork %}
             <span class="ctx-card__artwork">

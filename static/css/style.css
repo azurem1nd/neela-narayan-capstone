@@ -1104,6 +1104,40 @@ a { color: inherit; }
 .lib-card-wrapper[data-category="Companion"] .ctx-card__heading { padding-left: 23cqw; }
 .lib-card-wrapper[data-category="Glimpse"] .ctx-card__heading { padding-left: 4.7cqw; }
 
+/* ---- Redesigned cards (Trigger/Locked/Spiral, 2026-09-24) --
+   the number sits fully independent of the heading now (top-left,
+   absolutely positioned against the card itself, per the supplied
+   reference designs) instead of sharing a grid row with it, so the
+   heading is free to center on the true card width with no
+   per-category clearance nudging needed. Position measured directly
+   off the 712x920 reference PNGs; width is each number asset's own
+   viewBox width at 1:1 scale against the 712-wide reference (same
+   convention every other card asset in this file already uses). ---- */
+
+.ctx-card__number-svg--redesigned {
+  position: absolute;
+  top: 1.5cqw;
+  left: 1cqw;
+  height: auto;
+  margin: 0;
+  z-index: 1;
+}
+
+.ctx-card__number-svg--trigger { width: 36.24cqw; }
+.ctx-card__number-svg--locked { width: 44.66cqw; }
+.ctx-card__number-svg--spiral { width: 45.79cqw; }
+
+/* Heading block for the redesigned cards: plain centered flow content
+   (not a grid cell shared with the number), pushed down far enough to
+   clear the absolutely-positioned number above it -- measured off the
+   reference (title top ~35cqw from the card's own top edge, minus the
+   5cqw card padding already in flow). */
+.ctx-card__heading--redesigned {
+  display: block;
+  margin-top: 30cqw;
+  text-align: center;
+}
+
 .ctx-card__title {
   display: block;
   font-family: var(--font-display);
@@ -1135,6 +1169,19 @@ a { color: inherit; }
   max-width: 80%;
   margin: 5.5cqw auto 0;
   text-align: center;
+}
+
+/* "play on spotify" CTA (Trigger/Locked/Spiral) -- self-colored pill
+   asset (cta_cards.svg), own true scale against the 712-wide
+   reference (243/712 = 34.13cqw), inert content inside the card's
+   existing big clickable button, not a second interactive element. */
+.ctx-card__cta {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 34.13cqw;
+  height: auto;
+  margin: 14.5cqw auto 0;
 }
 
 .sr-only {
@@ -1223,6 +1270,26 @@ a { color: inherit; }
   right: 0;
   bottom: 8cqw;
   width: 30cqw;
+  height: auto;
+}
+
+/* Redesigned cards' corner patterns (Trigger/Locked/Spiral) -- a
+   full-card-height strip down the right edge instead of the old
+   small top-right corner accent. Own true scale against the 712-wide
+   reference; each asset's own 920-tall viewBox naturally fills the
+   card's full height once width is set this way (height:auto), since
+   920 is that same reference canvas's own height. */
+.ctx-card__graphic--pattern-wide {
+  top: 0;
+  right: 0;
+  width: 15.03cqw;
+  height: auto;
+}
+
+.ctx-card__graphic--pattern-narrow {
+  top: 0;
+  right: 0;
+  width: 13.48cqw;
   height: auto;
 }
 
