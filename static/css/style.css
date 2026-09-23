@@ -748,16 +748,24 @@ a { color: inherit; }
   appearance: none;
 }
 
+/* Number and heading occupy the same stacked grid cell rather than
+   sharing a flex row: the number keeps its own intrinsic position
+   (unchanged), while the heading zone spans the FULL cell width
+   (= full card width) independent of the number's width, so its
+   text centers against the whole card rather than the space beside
+   the number. The cell's height is still the max of both children
+   (same as the old flex row), so nothing below shifts. */
 .ctx-card__header {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.5cqw;
+  display: grid;
+  grid-template-columns: 1fr;
   position: relative;
   z-index: 1;
 }
 
 .ctx-card__number {
-  flex-shrink: 0;
+  grid-area: 1 / 1;
+  justify-self: start;
+  align-self: start;
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 27cqw;
@@ -769,12 +777,22 @@ a { color: inherit; }
 }
 
 .ctx-card__heading {
-  display: block;
-  flex: 1;
+  grid-area: 1 / 1;
+  justify-self: stretch;
+  align-self: start;
   padding-top: 8cqw;
-  min-width: 0;
   text-align: center;
 }
+
+/* Centering against the full card width is correct for four of the
+   six categories, but "COMPANION" and "GLIMPSE" are long enough,
+   next to a wide enough number, that true-center runs the title text
+   into the number glyph. A small minimum-clearance nudge (padding-left
+   shifts the centered text right by half its value) fixes only these
+   two -- every other category is untouched, still centered on the
+   exact card center. */
+.lib-card-wrapper[data-category="Companion"] .ctx-card__heading { padding-left: 23cqw; }
+.lib-card-wrapper[data-category="Glimpse"] .ctx-card__heading { padding-left: 4.7cqw; }
 
 .ctx-card__title {
   display: block;
@@ -788,14 +806,13 @@ a { color: inherit; }
 }
 
 .ctx-card__meta-row {
-  display: flex;
-  justify-content: center;
-  gap: 3.5cqw;
+  display: block;
   margin: 1.6cqw 0 0;
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 3.6cqw;
   color: var(--tr-ink);
+  text-align: center;
 }
 
 .ctx-card__desc {

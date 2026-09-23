@@ -66,10 +66,7 @@
               <span class="ctx-card__number">{{ visual.number }}</span>
               <span class="ctx-card__heading">
                 <span class="ctx-card__title">{{ visual.title }}</span>
-                <span class="ctx-card__meta-row">
-                  <span>{{ today_display }}</span>
-                  <span>{{ context.track_count if context.track_count is not none else 0 }} track{{ 's' if context.track_count != 1 }}</span>
-                </span>
+                <span class="ctx-card__meta-row">{{ today_display }} · {{ context.track_count if context.track_count is not none else 0 }} track{{ 's' if context.track_count != 1 }}</span>
               </span>
             </span>
 
