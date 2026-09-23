@@ -162,43 +162,58 @@ def playlist_detail(playlist_id):
     can't fetch a playlist they don't own (playlists here are always
     created public=False -- see spotify_playlist.py).
     """
-    sp = get_spotify_client()
-    if sp is None:
-        return redirect(url_for("index"))
-
+    # TEMPORARY, for diagnosing a live 500 -- get_spotify_client() and
+    # everything reading the playlist object below weren't guarded
+    # before, so a revoked/expired refresh token, or any unexpected
+    # shape in what sp.playlist() returned, rendered Flask's bare
+    # default error page instead of a real traceback. Remove once
+    # diagnosed.
     try:
-        playlist = sp.playlist(playlist_id)
-    except SpotifyException:
-        # Not found, not this user's, or Spotify hiccuped -- there is no
-        # broken playlist page to show, just go back to a live library.
-        return redirect(url_for("analyze"))
+        sp = get_spotify_client()
+        if sp is None:
+            return redirect(url_for("index"))
 
-    name_parts = parse_playlist_name(playlist["name"])
-    images = playlist.get("images") or []
-    tracks = []
-    for item in playlist["tracks"]["items"]:
-        track = item.get("track")
-        if track is None:
-            continue
-        tracks.append({
-            "name": track.get("name"),
-            "artist": ", ".join(a["name"] for a in track.get("artists", [])) or "Unknown",
-        })
+        try:
+            playlist = sp.playlist(playlist_id)
+        except SpotifyException:
+            # Not found, not this user's, or Spotify hiccuped -- there is
+            # no broken playlist page to show, just go back to a live
+            # library.
+            return redirect(url_for("analyze"))
 
-    return render_template(
-        "playlist_detail.html",
-        playlist={
-            "id": playlist["id"],
-            "name": playlist["name"],
-            "category": name_parts["category"],
-            "date": name_parts["date"],
-            "description": playlist.get("description") or "",
-            "track_count": playlist["tracks"]["total"],
-            "image_url": images[0]["url"] if images else None,
-            "url": playlist["external_urls"]["spotify"],
-            "tracks": tracks,
-        },
-    )
+        name_parts = parse_playlist_name(playlist["name"])
+        images = playlist.get("images") or []
+        tracks = []
+        for item in playlist["tracks"]["items"]:
+            track = item.get("track")
+            if track is None:
+                continue
+            tracks.append({
+                "name": track.get("name"),
+                "artist": ", ".join(a["name"] for a in track.get("artists", [])) or "Unknown",
+            })
+
+        return render_template(
+            "playlist_detail.html",
+            playlist={
+                "id": playlist["id"],
+                "name": playlist["name"],
+                "category": name_parts["category"],
+                "date": name_parts["date"],
+                "description": playlist.get("description") or "",
+                "track_count": playlist["tracks"]["total"],
+                "image_url": images[0]["url"] if images else None,
+                "url": playlist["external_urls"]["spotify"],
+                "tracks": tracks,
+            },
+        )
+    except Exception as exc:
+        traceback.print_exc()
+        return (
+            "<pre>playlist page failed: "
+            f"{type(exc).__name__}: {exc}</pre>"
+            f'<p><a href="{url_for("analyze")}">back to library</a></p>'
+        ), 500
 
 
 @app.route("/spotify-token")
@@ -238,16 +253,22 @@ def create_playlist_route():
     generate_playlist_name() every other route uses -- not supplied by
     the client -- so it's always byte-for-byte the real, current name.
     """
-    sp = get_spotify_client()
-    if sp is None:
-        return jsonify({"error": "not authenticated"}), 401
-
     data = request.get_json(silent=True) or {}
     context_id = data.get("context_id")
     if not context_id:
         return jsonify({"error": "missing 'context_id'"}), 400
 
     try:
+        # get_spotify_client() is inside this try too now -- a refresh
+        # token that Spotify has revoked/expired can make
+        # validate_token() raise instead of cleanly returning None,
+        # which would otherwise produce exactly this generic
+        # unhandled-error symptom before any of the JSON error
+        # branches below ever get a chance to run.
+        sp = get_spotify_client()
+        if sp is None:
+            return jsonify({"error": "not authenticated"}), 401
+
         plays = fetch_recent_plays(sp)
         contexts = consolidate_by_category(build_contexts(plays))
 
