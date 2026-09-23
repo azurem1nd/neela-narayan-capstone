@@ -124,6 +124,47 @@
     overlay.hidden = !isLoading;
   }
 
+  // Card state model: idle -> creating -> (ready/existing, navigating
+  // away) or back to idle on failure. `creating` (the shared in-flight
+  // flag) and every card's loading overlay must both be reset to idle
+  // before this page is left showing anything but its normal front --
+  // "resolved" is decided server-side (playlist_persistence.py is the
+  // real source of truth; RESOLVED_KEY above is only a cosmetic label
+  // hint), but *this page's own visible state* still has to go back to
+  // idle itself, because:
+  //
+  // A browser back-forward-cache (bfcache) restore does NOT re-run
+  // this script or reset closure variables -- it resumes the exact
+  // in-memory DOM/JS state the page had at the moment of navigating
+  // away. Previously this code left creating=true and the loading
+  // overlay visible "because we're navigating away anyway" -- but if
+  // the user later hits the browser Back button from the playlist
+  // page, a bfcache-restored library page reappears frozen in exactly
+  // that mid-navigation state: overlay stuck on "Creating playlist..."
+  // forever, and every card silently inert (creating stayed true, so
+  // the click handler's `if (creating) return;` guard never lets
+  // another click through). Fixed two ways: (1) reset to idle
+  // immediately once a request resolves, right before navigating, so
+  // there is no longer a "stuck-looking" state to freeze into bfcache
+  // in the first place; (2) a `pageshow` listener as a second,
+  // independent safety net that forces idle on any bfcache restore
+  // regardless of what state the page happened to freeze in.
+  function resetAllToIdle() {
+    creating = false;
+    cardFrames.forEach((frame) => setLoading(frame, false));
+  }
+
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) resetAllToIdle();
+  });
+
+  // Belt-and-suspenders against a request that never resolves at all
+  // (e.g. a dropped connection with no error event) -- without this,
+  // a hung fetch has no other path back to idle. 20s is generous next
+  // to how long /create-playlist normally takes (a live Spotify
+  // fetch + classification pass), but still finite.
+  const REQUEST_TIMEOUT_MS = 20000;
+
   cardFrames.forEach((frame) => {
     frame.addEventListener('click', () => {
       if (creating) return;
@@ -133,14 +174,19 @@
       creating = true;
       setLoading(frame, true, loadingLabel(contextId));
 
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
       fetch('/create-playlist', {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ context_id: contextId }),
+        signal: controller.signal,
       })
         .then((res) => res.json().then((data) => ({ ok: res.ok, status: res.status, data: data })))
         .then(({ ok, status, data }) => {
+          window.clearTimeout(timeoutId);
           if (!ok || !data.playlist_id) {
             // TEMPORARY, for diagnosing a live 500 -- surfaces the
             // backend's exception_type/exception_message (see app.py's
@@ -151,14 +197,19 @@
             throw new Error('playlist creation failed --' + detail);
           }
           markResolved(contextId);
-          // Navigating away -- deliberately leave creating=true and the
-          // loading overlay showing, there is nothing left to reset.
+          // Back to idle (normal card front) before navigating, not
+          // after -- see resetAllToIdle()'s comment above for why.
+          resetAllToIdle();
           window.location.href = '/playlist/' + data.playlist_id;
         })
         .catch((err) => {
+          window.clearTimeout(timeoutId);
+          const label = err && err.name === 'AbortError'
+            ? "Taking too long -- try again"
+            : "Couldn't create playlist -- try again";
           console.error('Create playlist failed:', err);
           creating = false;
-          setLoading(frame, true, "Couldn't create playlist -- try again");
+          setLoading(frame, true, label);
           window.setTimeout(() => setLoading(frame, false), 2500);
         });
     });
