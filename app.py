@@ -227,7 +227,11 @@ def playlist_detail(playlist_id):
                     "name": item.get("name") or "Unknown track",
                     "artist": ", ".join(a["name"] for a in artists) or "Unknown",
                     "album": album.get("name") or "",
-                    "image_url": album_images[-1]["url"] if album_images else None,
+                    # Spotify's images array is largest-first; [0] (not
+                    # [-1]) so the ~640px image is used instead of the
+                    # ~64px one -- the track list displays this at up
+                    # to 6rem/96px, well past 64px's native size.
+                    "image_url": album_images[0]["url"] if album_images else None,
                     "duration": _format_duration(item.get("duration_ms")),
                     # Needed so the per-track play button (art overlay)
                     # can tell which row is currently playing by

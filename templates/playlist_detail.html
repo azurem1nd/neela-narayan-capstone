@@ -69,19 +69,12 @@
   <a class="playlist-card__cta" href="{{ playlist.url }}" target="_blank" rel="noopener">play on spotify</a>
 </section>
 
-{#- Stage 3 Web Playback SDK widget -- untouched (same ids/classes
-   player.js already binds to), only relocated under the redesigned
-   card instead of the old summary block. -#}
-<div class="player-status" id="player-status" data-state="connecting" data-playlist-uri="spotify:playlist:{{ playlist.id }}">
-  <p class="player-status__label">TRACK RECORD PLAYER</p>
-  <p class="player-status__value" id="player-status-value">Connecting...</p>
-  <p class="player-now-playing" id="player-now-playing"></p>
-  <div class="player-controls">
-    <button type="button" class="player-control-btn" id="player-prev-btn" disabled>PREV</button>
-    <button type="button" class="player-control-btn player-control-btn--play" id="player-play-btn" disabled>PLAY</button>
-    <button type="button" class="player-control-btn" id="player-next-btn" disabled>NEXT</button>
-  </div>
-</div>
+{#- Web Playback SDK connection -- the visible TRACK RECORD PLAYER
+   widget (status text + PREV/PLAY/NEXT) was removed since play
+   control now lives on each track's own photo (see
+   .playlist-card__track-art-btn above); this hidden element just
+   carries the playlist URI the SDK connection still needs. -#}
+<div id="player-context" hidden data-playlist-uri="spotify:playlist:{{ playlist.id }}"></div>
 
 <div class="ticker" aria-hidden="true">
   <div class="ticker__track">
