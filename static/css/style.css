@@ -1038,40 +1038,9 @@ a { color: inherit; }
    text centers against the whole card rather than the space beside
    the number. The cell's height is still the max of both children
    (same as the old flex row), so nothing below shifts. */
-.ctx-card__header {
-  display: grid;
-  grid-template-columns: 1fr;
-  position: relative;
-  z-index: 1;
-}
-
-.ctx-card__number {
-  grid-area: 1 / 1;
-  justify-self: start;
-  align-self: start;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 27cqw;
-  line-height: 0.78;
-  color: var(--ctx-accent, var(--tr-blue));
-  -webkit-text-stroke: 1cqw var(--tr-ink);
-  paint-order: stroke fill;
-  margin: -1cqw 0 0 -2cqw;
-}
-
-.ctx-card__heading {
-  grid-area: 1 / 1;
-  justify-self: stretch;
-  align-self: start;
-  padding-top: 8cqw;
-  text-align: center;
-}
-
-/* Self-colored vector numeral (Explore/Glimpse only) -- sized/
-   positioned to land in the exact same spot the shared text numeral
-   occupies for every other category (measured: ~4.3cqw from the top,
-   ~3.3cqw from the left, ~21cqw tall). Width is each asset's own
-   aspect ratio (height set, width auto). */
+/* All six categories now use the redesigned number treatment below
+   (.ctx-card__number-svg) -- the old grid-shared-row header/number/
+   heading rules are fully superseded. */
 .ctx-card__number-svg {
   grid-area: 1 / 1;
   justify-self: start;
@@ -1094,18 +1063,7 @@ a { color: inherit; }
   paint-order: stroke fill;
 }
 
-/* Centering against the full card width is correct for four of the
-   six categories, but "COMPANION" and "GLIMPSE" are long enough,
-   next to a wide enough number, that true-center runs the title text
-   into the number glyph. A small minimum-clearance nudge (padding-left
-   shifts the centered text right by half its value) fixes only these
-   two -- every other category is untouched, still centered on the
-   exact card center. */
-.lib-card-wrapper[data-category="Companion"] .ctx-card__heading { padding-left: 23cqw; }
-.lib-card-wrapper[data-category="Glimpse"] .ctx-card__heading { padding-left: 4.7cqw; }
-
-/* ---- Redesigned cards (Trigger/Locked/Spiral, 2026-09-24) --
-   the number sits fully independent of the heading now (top-left,
+/* ---- Redesigned cards -- the number sits fully independent of the heading now (top-left,
    absolutely positioned against the card itself, per the supplied
    reference designs) instead of sharing a grid row with it, so the
    heading is free to center on the true card width with no
@@ -1126,6 +1084,9 @@ a { color: inherit; }
 .ctx-card__number-svg--trigger { width: 36.24cqw; }
 .ctx-card__number-svg--locked { width: 44.66cqw; }
 .ctx-card__number-svg--spiral { width: 45.79cqw; }
+.ctx-card__number-svg--companion { width: 44.80cqw; }
+.ctx-card__number-svg--glimpse { width: 45.22cqw; }
+.ctx-card__number-svg--explore { width: 43.96cqw; }
 
 /* Heading block for the redesigned cards: plain centered flow content
    (not a grid cell shared with the number), pushed down far enough to
@@ -1240,40 +1201,11 @@ a { color: inherit; }
   z-index: 0;
 }
 
-/* Sizes below use each asset's own aspect ratio (width set, height
-   auto) rather than forcing a square/old proportion -- companion,
-   trigger/spiral, locked/glimpse, and explore all have their own
-   real intrinsic shape now instead of a shared approximation. */
+/* All six categories are now on the redesigned full-card-height
+   corner pattern below -- the old small top-right corner accent
+   classes (dots/checker/stripes/curves) are fully superseded. */
 
-.ctx-card__graphic--dots {
-  top: 0;
-  right: 0;
-  width: 34cqw;
-  height: auto;
-}
-
-.ctx-card__graphic--checker {
-  top: 0;
-  right: 0;
-  width: 15cqw;
-  height: auto;
-}
-
-.ctx-card__graphic--stripes {
-  right: 0;
-  bottom: 12cqw;
-  width: 16cqw;
-  height: auto;
-}
-
-.ctx-card__graphic--curves {
-  right: 0;
-  bottom: 8cqw;
-  width: 30cqw;
-  height: auto;
-}
-
-/* Redesigned cards' corner patterns (Trigger/Locked/Spiral) -- a
+/* Redesigned cards' corner patterns -- a
    full-card-height strip down the right edge instead of the old
    small top-right corner accent. Own true scale against the 712-wide
    reference; each asset's own 920-tall viewBox naturally fills the
@@ -1290,6 +1222,27 @@ a { color: inherit; }
   top: 0;
   right: 0;
   width: 13.48cqw;
+  height: auto;
+}
+
+.ctx-card__graphic--pattern-companion {
+  top: 0;
+  right: 0;
+  width: 14.04cqw;
+  height: auto;
+}
+
+.ctx-card__graphic--pattern-glimpse {
+  top: 0;
+  right: 0;
+  width: 14.89cqw;
+  height: auto;
+}
+
+.ctx-card__graphic--pattern-explore {
+  top: 0;
+  right: 0;
+  width: 17.98cqw;
   height: auto;
 }
 
