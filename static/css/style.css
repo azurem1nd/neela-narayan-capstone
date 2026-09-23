@@ -417,19 +417,43 @@ a { color: inherit; }
   gap: clamp(0.85rem, 1.8vw, 1.5rem);
 }
 
-.landing-page .subtitle-link {
-  display: inline-block;
+/* Pill-button CTA, matching the supplied reference assets' shape
+   (connect_spotify.svg / music_lib.svg: a fully-rounded outlined
+   pill). .cta-pill is the shared shape+behavior for both landing
+   CTAs; --svg swaps live text for the embedded connect_spotify.svg
+   (music_lib.svg had no text baked in, so "your music library" stays
+   real text on the same pill styling instead of an empty graphic).
+   Border and text share one `color` so hover/focus recolors the
+   whole button -- for --svg this relies on the embedded SVG's own
+   stroke/fill being currentColor. */
+.landing-page .cta-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-ui);
   font-size: clamp(1rem, 2.2vw, 1.5rem);
   color: var(--tr-ink);
   text-decoration: none;
-  border-bottom: 2px solid transparent;
-  transition: border-color 150ms ease;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  padding: 0.6em 1.75em;
+  transition: color 150ms ease;
 }
 
-.landing-page .subtitle-link:hover,
-.landing-page .subtitle-link:focus-visible {
-  border-color: var(--tr-ink);
+.landing-page .cta-pill:hover,
+.landing-page .cta-pill:focus-visible {
+  color: var(--tr-blue);
+}
+
+.landing-page .cta-pill--svg {
+  padding: 0;
+  border: none;
+}
+
+.landing-page .cta-pill--svg svg {
+  display: block;
+  width: clamp(220px, 32vw, 400px);
+  height: auto;
 }
 
 /* "your music library" CTA: a smaller caption revealed on hover/focus,
@@ -452,7 +476,7 @@ a { color: inherit; }
 }
 
 .landing-page .library-cta:hover .library-cta__caption,
-.landing-page .library-cta:has(.subtitle-link:focus-visible) .library-cta__caption {
+.landing-page .library-cta:has(.cta-pill:focus-visible) .library-cta__caption {
   opacity: 1;
 }
 
