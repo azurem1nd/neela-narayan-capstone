@@ -659,9 +659,9 @@ a { color: inherit; }
   text-align: center;
 }
 
-/* Web Playback SDK connection status -- Stage 1 dev/test widget only,
-   not part of the designed card/poster system. Plain, small, and
-   clearly temporary. */
+/* Web Playback SDK connection status -- Stage 1-2 dev/test widget
+   only, not part of the designed card/poster system. Plain, small,
+   and clearly temporary (including the test-track button below). */
 .player-status {
   margin: 2rem auto 0;
   padding: 0.75rem 1.25rem;
@@ -686,12 +686,45 @@ a { color: inherit; }
   color: var(--tr-ink);
 }
 
-.player-status[data-state="connected"] .player-status__value {
+.player-status[data-state="ready"] .player-status__value {
   color: var(--tr-blue);
+}
+
+.player-status[data-state="playing"] .player-status__value {
+  color: var(--tr-green, var(--tr-blue));
+}
+
+.player-status[data-state="not-ready"] .player-status__value {
+  opacity: 0.6;
 }
 
 .player-status[data-state="error"] .player-status__value {
   color: #C0392B;
+}
+
+.player-test-btn {
+  display: block;
+  margin: 0.6rem auto 0;
+  padding: 0.4rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: none;
+  color: var(--tr-ink);
+  border: 1px solid var(--tr-ink);
+  cursor: pointer;
+}
+
+.player-test-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.player-test-btn:not(:disabled):hover,
+.player-test-btn:not(:disabled):focus-visible {
+  background: var(--tr-ink);
+  color: var(--tr-bg);
 }
 
 /* ---- Stage / view modes ---- */

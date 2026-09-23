@@ -18,11 +18,14 @@
   <p class="ctx-detail__description">{{ context.category_description or "No description available for this one yet." }}</p>
 </section>
 
-{#- Stage 1: Web Playback SDK connection status only -- dev/test
-   widget, no playback controls yet. See static/js/player.js. -#}
+{#- Stage 2: Web Playback SDK connection status + a temporary test-
+   track button proving the SDK can actually start playback on this
+   browser's real device. Not the final player UI -- see
+   static/js/player.js. -#}
 <div class="player-status" id="player-status" data-state="connecting">
   <p class="player-status__label">TRACK RECORD PLAYER</p>
-  <p class="player-status__value" id="player-status-value">CONNECTING...</p>
+  <p class="player-status__value" id="player-status-value">Connecting...</p>
+  <button type="button" class="player-test-btn" id="player-test-btn" disabled>PLAY TEST TRACK</button>
 </div>
 {% endblock %}
 
