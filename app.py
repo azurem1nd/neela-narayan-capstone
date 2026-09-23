@@ -24,7 +24,7 @@ from spotify_playlist import create_playlist
 REPO_DIR = Path(__file__).resolve().parent
 load_dotenv(REPO_DIR / ".env")
 
-SCOPE = "user-read-recently-played playlist-modify-private"
+SCOPE = "user-read-recently-played playlist-modify-private streaming"
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ["FLASK_SECRET_KEY"]
@@ -180,6 +180,27 @@ def context_detail(context_id):
         context=match,
         today_display=now.strftime("%d %b %Y"),
     )
+
+
+@app.route("/spotify-token")
+def spotify_token():
+    """Give the frontend a valid access token for the Web Playback SDK.
+
+    Reuses get_spotify_client() outright -- same auth_manager, same
+    session-backed cache_handler, same automatic refresh-if-expired and
+    invalid-if-scope-insufficient behavior (spotipy.SpotifyOAuth.validate_token
+    returns None if the cached token's scope no longer covers what's
+    currently configured, e.g. right after adding `streaming` to SCOPE
+    -- so a stale pre-streaming session correctly falls through to 401
+    here too, the same as every other route already falling through to
+    a login redirect). Never touches the client secret; the token
+    returned is always scoped to the current request's own session.
+    """
+    sp = get_spotify_client()
+    if sp is None:
+        return jsonify({"error": "not authenticated"}), 401
+    token_info = sp.auth_manager.cache_handler.get_cached_token()
+    return jsonify({"access_token": token_info["access_token"]})
 
 
 @app.route("/create-playlist", methods=["POST"])

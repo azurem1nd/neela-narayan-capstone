@@ -647,8 +647,7 @@ a { color: inherit; }
   max-width: 30rem;
 }
 
-/* ---- Context detail page (navigation target only, for now --
-   no playback/Spotify action lives here yet) ---- */
+/* ---- Context detail page ---- */
 
 .ctx-detail__description {
   font-family: var(--font-mono);
@@ -658,6 +657,41 @@ a { color: inherit; }
   max-width: 32rem;
   margin: 0 auto;
   text-align: center;
+}
+
+/* Web Playback SDK connection status -- Stage 1 dev/test widget only,
+   not part of the designed card/poster system. Plain, small, and
+   clearly temporary. */
+.player-status {
+  margin: 2rem auto 0;
+  padding: 0.75rem 1.25rem;
+  max-width: max-content;
+  border: 1px solid var(--tr-ink);
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
+.player-status__label {
+  margin: 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--tr-ink);
+  opacity: 0.6;
+}
+
+.player-status__value {
+  margin: 0.2rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--tr-ink);
+}
+
+.player-status[data-state="connected"] .player-status__value {
+  color: var(--tr-blue);
+}
+
+.player-status[data-state="error"] .player-status__value {
+  color: #C0392B;
 }
 
 /* ---- Stage / view modes ---- */
