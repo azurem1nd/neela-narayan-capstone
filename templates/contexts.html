@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_card_graphics.html" import trackrecord_wordmark, trigger_number, locked_number, spiral_number, companion_number, glimpse_number, explore_number, trigger_pattern, locked_pattern, spiral_pattern, companion_pattern, glimpse_pattern, explore_pattern, scribble_1, cta_play_on_spotify %}
+{% from "_card_graphics.html" import trackrecord_wordmark, trigger_number, locked_number, spiral_number, companion_number, glimpse_number, explore_number, trigger_pattern, locked_pattern, spiral_pattern, companion_pattern, glimpse_pattern, explore_pattern, scribble_1, scribble_2, cta_play_on_spotify %}
 
 {% block title %}My Music Library — Track Record{% endblock %}
 
@@ -61,7 +61,9 @@
       <button type="button" class="ctx-card-frame" data-context-id="{{ context.context_id }}" aria-label="{{ visual.title }} -- create and play this playlist">
         <div class="hover-3d">
           <span class="ctx-card">
-            {{ scribble_1() }}
+            {% if context.label in ['Companion', 'Exploration', 'Glimpse'] %}{{ scribble_2() }}
+            {% else %}{{ scribble_1() }}
+            {% endif %}
             {% if context.label == 'Companion' %}{{ companion_pattern() }}
             {% elif context.label == 'Trigger' %}{{ trigger_pattern() }}
             {% elif context.label == 'Locked' %}{{ locked_pattern() }}
