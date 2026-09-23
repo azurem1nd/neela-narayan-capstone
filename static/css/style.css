@@ -735,7 +735,7 @@ a { color: inherit; }
   height: 100%;
   overflow: hidden;
   background: var(--tr-bg);
-  border: 1px solid var(--tr-ink);
+  border: 1cqw solid var(--tr-ink);
   padding: 5cqw 5cqw 4cqw;
   margin: 0;
   display: flex;
@@ -771,7 +771,7 @@ a { color: inherit; }
   font-size: 27cqw;
   line-height: 0.78;
   color: var(--ctx-accent, var(--tr-blue));
-  -webkit-text-stroke: 1.50cqw var(--tr-ink);
+  -webkit-text-stroke: 1cqw var(--tr-ink);
   paint-order: stroke fill;
   margin: -1cqw 0 0 -2cqw;
 }
@@ -800,14 +800,14 @@ a { color: inherit; }
 }
 
 /* Stroke weight in viewBox units, chosen so it renders at the same
-   visual thickness as .ctx-card__number's 1.50cqw -webkit-text-stroke
+   visual thickness as .ctx-card__number's 1cqw -webkit-text-stroke
    once scaled by height:21cqw against each asset's own ~145-148-tall
    viewBox -- every number's outline reads the same regardless of
    whether it's the shared CSS-stroked digit or one of these two
    self-colored vector numerals. */
 .ctx-card__number-outline {
   stroke: var(--tr-ink);
-  stroke-width: 10.5;
+  stroke-width: 7;
   paint-order: stroke fill;
 }
 
