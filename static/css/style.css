@@ -799,6 +799,18 @@ a { color: inherit; }
   margin: -0.7cqw 0 0 -1.7cqw;
 }
 
+/* Stroke weight in viewBox units, chosen so it renders at the same
+   visual thickness as .ctx-card__number's 0.50cqw -webkit-text-stroke
+   once scaled by height:21cqw against each asset's own ~145-148-tall
+   viewBox -- every number's outline reads the same regardless of
+   whether it's the shared CSS-stroked digit or one of these two
+   self-colored vector numerals. */
+.ctx-card__number-outline {
+  stroke: var(--tr-ink);
+  stroke-width: 3.5;
+  paint-order: stroke fill;
+}
+
 /* Centering against the full card width is correct for four of the
    six categories, but "COMPANION" and "GLIMPSE" are long enough,
    next to a wide enough number, that true-center runs the title text
