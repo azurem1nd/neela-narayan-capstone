@@ -431,12 +431,12 @@ a { color: inherit; }
   align-items: center;
   justify-content: center;
   font-family: var(--font-ui);
-  font-size: clamp(1rem, 2.2vw, 1.5rem);
+  font-size: clamp(0.8rem, 1.7vw, 1.15rem);
   color: var(--tr-ink);
   text-decoration: none;
   border: 2px solid currentColor;
   border-radius: 999px;
-  padding: 0.6em 1.75em;
+  padding: 0.55em 1.6em;
   transition: color 150ms ease;
 }
 
@@ -452,7 +452,7 @@ a { color: inherit; }
 
 .landing-page .cta-pill--svg svg {
   display: block;
-  width: clamp(220px, 32vw, 400px);
+  width: clamp(170px, 25vw, 310px);
   height: auto;
 }
 
@@ -1140,7 +1140,7 @@ a { color: inherit; }
   position: relative;
   z-index: 1;
   display: block;
-  width: 34.13cqw;
+  width: 39cqw;
   height: auto;
   margin: 14.5cqw auto 0;
 }
