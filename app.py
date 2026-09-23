@@ -27,7 +27,7 @@ from spotify_playlist import create_playlist
 REPO_DIR = Path(__file__).resolve().parent
 load_dotenv(REPO_DIR / ".env")
 
-SCOPE = "user-read-recently-played playlist-modify-private streaming"
+SCOPE = "user-read-recently-played playlist-modify-private playlist-read-private streaming"
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ["FLASK_SECRET_KEY"]
