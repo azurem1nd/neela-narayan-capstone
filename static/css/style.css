@@ -885,27 +885,6 @@ a { color: inherit; }
   color: var(--tr-ink);
 }
 
-/* Sits in the card's own bottom padding, bleeding past both the
-   card's left edge and slightly past its right edge -- its own true
-   (2026-09-25) asset, sized for this page's full card width rather
-   than the small-corner scribble_1 approximation used before. z-index
-   0 (below the box's z-index 1) so it never paints over track rows. */
-.playlist-card__scribble {
-  display: block;
-  position: relative;
-  z-index: 0;
-  width: 108%;
-  margin: -0.5rem 0 -1rem -4%;
-  pointer-events: none;
-}
-
-.playlist-card__scribble svg {
-  display: block;
-  width: 100%;
-  height: auto;
-  color: var(--tr-ink);
-}
-
 .playlist-card__cta {
   position: relative;
   z-index: 1;
