@@ -1,68 +1,55 @@
-# Untitled Vinyl Player
+# TRACK RECORD
 
-Untitled Vinyl Player is a Spotify-connected listening companion that finds the
-contexts hidden in the way you listen to music.
+TRACK RECORD is a Spotify-connected listening companion that finds the contexts hidden in the way you listen to music.
 
-Instead of organizing music by genre, artist, or album, it looks at listening
-behaviour, when you listen, how long you listen, what you repeat, and when a
-listening pattern appears, and turns those patterns into persistent listening
-contexts.
-
-The result is a collection of "records" representing moments and habits in
-your listening history.
+Instead of organising music by genre, artist, or album, it looks at listening behaviour — repetition, returns, sessions, and listening patterns — and turns them into personal contexts.
 
 ## How it works
 
 1. Connect your Spotify account.
-2. The app retrieves your recent listening history.
+2. TRACK RECORD retrieves your recent listening history.
 3. Listening sessions are detected from gaps between plays.
-4. Sessions are grouped using behavioural patterns such as:
-   - time of day
-   - day of week
-   - session duration
-   - repeat intensity
-5. These groups become listening contexts.
-6. Each context is represented visually as a record.
+4. Listening behaviour is analysed using repetition, active days, session duration, and artist/track patterns.
+5. Behavioural patterns are classified into contexts such as **Spiral, Trigger, Companion, Locked, Explore,** and **Glimpse**.
+6. Contexts are presented as visual records.
 7. A context can be turned into a Spotify playlist.
 
 ## Why
 
-Music is often remembered through context:
+Spotify records what you listen to, but not necessarily the context behind it.
 
-- the songs played every morning
-- the playlist repeated for an entire day
-- music associated with a particular routine
-- something you listened to obsessively for a short period and then abandoned
+TRACK RECORD asks:
 
-Untitled Vinyl Player tries to preserve those contexts instead of letting them
-disappear into listening history.
+> **What if my listening history could remember the way I listened, not just what I listened to?**
+
+It turns listening behaviour into personal, revisitable playlists.
+
+## AI
+
+Claude Code is used as an AI-assisted development agent for implementation, debugging, testing, and iteration.
+
+The core listening analysis is deterministic. A Gemini-powered interpretation layer is being added to replace hardcoded context descriptions with context-specific explanations and playlist descriptions.
 
 ## Tech
 
-- Python / Flask
-- Spotify Web API
-- Spotify OAuth
-- HTML / CSS / JavaScript
-- SQLite
-- Claude Code for AI-assisted development
+* Python / Flask
+* Spotify Web API
+* Spotify OAuth
+* Spotify Web Playback SDK
+* HTML / CSS / JavaScript
+* Claude Code
+* Gemini
+* Railway
 
 ## Current status
 
-This is an ongoing prototype.
-
-The current version:
-- connects to Spotify
-- retrieves recent listening history
-- detects listening sessions
-- groups sessions into contexts
-- presents contexts through a vinyl / record-sleeve interface
-- can create Spotify playlists from detected contexts
-
-## Future direction
-
-- In-page music playback using Spotify's Web Playback SDK
-- Persistent context identity as listening behaviour changes
-- Rename, merge and split contexts
-- Manually add or remove tracks
-- Detect short-lived obsessive listening patterns
-- Detect when an old listening context resurfaces
+* Spotify authentication
+* Recent listening history
+* Session detection
+* Behavioural context classification
+* Context-based track selection
+* Visual context cards
+* Spotify playlist creation and reuse
+* Playlist detail and browser playback
+* Open in Spotify
+* Gemini interpretation layer in progress
