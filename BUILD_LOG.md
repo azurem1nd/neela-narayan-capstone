@@ -203,3 +203,28 @@
 
 **Approx. token usage:** ~486,754 tokens (real output-token counts recovered from the local Claude Code session transcript, summed across the full 2026-09-23 IST calendar day — not a rough guess: 302,603 for the Part A span + 184,151 for the Part B span)
 
+## 2026-09-24
+- **Time spent:** ~2 hours.
+- **Tokens used:** ~20,000
+- **Shipped (implemented):**
+
+### AI / Gemini integration
+
+* Reworked the role of AI in the final product so Gemini can replace the previously hardcoded context-description layer.
+* Kept the deterministic behavioural model responsible for detecting listening patterns and assigning contexts.
+* Defined the intended Gemini flow: structured behavioural evidence → Gemini → context-specific explanation and playlist description.
+* Began integrating Gemini into the existing pipeline rather than keeping it as a separate experiment.
+* Integration could not be fully completed or runtime-tested after reaching the Claude Code weekly usage limit.
+
+### Visual refinement
+
+* Swapped one of the context illustrations with a new approved illustration asset.
+* Updated the corresponding visual implementation while preserving the existing card composition, typography, colours, and dynamic data.
+
+### Outcome
+
+* Core deterministic listening/context system remains unchanged.
+* AI layer is now defined as an interpretation layer on top of the behavioural model.
+* Continued refining the visual identity and context cards with the final illustration assets.
+
+
