@@ -489,7 +489,10 @@ a { color: inherit; }
   margin: 0;
 }
 
-/* ---- Decorative record-crate illustration, shared by both screens. ---- */
+/* ---- Decorative record-player illustration, shared by both screens.
+   (Was record-crate.svg; replaced 2026-09-25 with the supplied
+   record-player asset -- static/img/record-crate.svg kept on disk,
+   unreferenced, for provenance.) ---- */
 
 .landing-page .landing-illustration {
   display: block;
