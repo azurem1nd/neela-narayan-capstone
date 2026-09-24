@@ -6,3 +6,5 @@ track_record.db
 pull.log
 __pycache__/
 flask_session/
+.DS_Store
+.agents/

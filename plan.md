@@ -36,3 +36,6 @@ Right now clustering is fully derived from listening history — no data yet, no
 
 -  Manual inputs layer (add/remove songs from a cluster)
 This is already in  my stretch goals as "manual rename/merge/split of clusters, feeding back into future clustering." Adding/removing individual songs is a smaller, more granular version of the same idea. Not a new concept — just an earlier-arriving version of something you'd already planned.
+
+-  Spotify OAuth scopes aren't "write once, covers everything"
+Building real playback (Web Playback SDK) and a page that shows a just-created playlist's actual track list surfaced that creating a playlist and reading one back are different permissions — `playlist-modify-private` (had from the start, needed to create) vs. `playlist-read-private` (never needed until the app tried to read a playlist's contents back from Spotify for the first time, which only happened once the playlist detail page existed). Symptom was a 500 error on the new playlist page: Spotify returned the playlist's name/id/owner fine but silently omitted the `tracks` field without the read scope, rather than an obvious permissions error. Not a new concept — just confirmation that each new use of the Spotify API needs its own scope check, not an assumption that the original OAuth setup already covers whatever comes next.

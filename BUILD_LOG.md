@@ -130,28 +130,34 @@
   - After completing and testing the redesign, the changes were committed and pushed as a checkpoint, creating a stable version to return to while continuing visual experimentation and refinement.
 - **Next:** Visual refinement and asset/design iteration, including refining the vinyl, the record-sleeve/card system, colors, typography, and overall composition.
 
-## 2026-09-22
-- **Time spent:** ~7-8 hrs (commit span 16:15–23:57 IST, from git history — not separately tracked via session transcript)
-- **Tokens used:** not tracked
-- **Shipped (implemented):**
-  - Rebuilt the landing page as "Track Record": initial brand palette (#FFF8E7 background, #260FC1 title/accent, #F253AD ticker), scoped to the landing page only so the rest of the app kept its existing vinyl-label identity at the time. New logged-out pitch copy about pattern-detection in listening history ("TRACK RECORD finds the patterns hiding in your listening history..."), and the footer ticker rebuilt into a seamless marquee showing "connect to spotify" / "connected to your spotify @[username]" depending on auth state.
-  - Added a three.js hero graphic (`static/js/turntable3d.js`): a chrome/brushed-silver platter and tonearm (`MeshPhysicalMaterial` + a `RoomEnvironment` IBL for real reflections) with a black vinyl disc, procedural groove texture, and metallic label center — static while logged out, spinning once connected. Later revised the disc to a reflective/prismatic "burned CD" finish (physical `iridescence` plus an art-directed rainbow-streak texture). Made the disc a real link to `/analyze` in the connected state, with a hover/focus glow.
-  - Connected-state CTA/disc label went from "see my library" to "my music library" (briefly "see my library" in between).
-  - Went through several rounds of wordmark typography: the licensed Elastic font was initially unavailable, so Gluten stood in → the real `Elastic.otf` arrived and was wired up and verified actually loading (headless-browser check of `document.fonts` and the computed font) → switched to Unbounded (Google Fonts) + JetBrains Mono for a cleaner geometric look, dropping a per-letter jitter effect tuned for Elastic's hand-drawn wobble → briefly back to Elastic → briefly a local `Unbounded-Regular.ttf` file → settled by end of day on the Google-Fonts-loaded Unbounded (800 weight) as the wordmark's font, with JetBrains Mono for body/ticker/UI text throughout.
-  - Rebuilt the landing page a second time, now pixel-matched against three supplied reference frames (disconnected/connected/about states): exact colors sampled from the references (#F0F0EB base, #BEE860 green, #E57BA1 pink ticker, #292929 ink, #260FC1 divider). This removed the three.js turntable graphic entirely (`static/js/turntable3d.js` deleted) since none of the reference images showed an illustration, replacing the connected-state disc link with a plain "your music library" text link.
-  - Simplified further to the real 2-screen model the app actually has (logged-out: title + pitch + connect link together; logged-in: title + library link only), removing the click-to-toggle "About" panel from the previous pass.
-  - Rebuilt the "my music library" page (`contexts.html`) as daisyUI hover-3d tilt cards — first a generic card design, then rebuilt again to pixel-match six supplied per-category reference card designs (Companion/Trigger/Locked/Spiral/Exploration/Glimpse), with layout, colors, and per-category accents all sampled from those references. `context_detection.py`'s `build_contexts()`/`consolidate_by_category()` output feeds the cards unchanged — no classification, playlist-naming, or OAuth logic touched.
-  - Added single-card (default, with prev/next + keyboard-arrow nav) and grid view modes for the library page, preserving the current card index when switching between them.
-- **Investigated/fixed:**
-  - The three.js hero graphic (while it still existed) was clipped/hidden behind the fixed ticker bar on short viewports — fixed with viewport-height-aware sizing, verified from 1440x650 through 1440x900.
-  - The disc's material read as washed out — darkened the base gradient, pushed the streak texture to full saturation, and raised iridescence/metalness and light intensity so the reflections actually showed.
-  - Found and fixed a `[hidden]` vs. CSS-specificity bug where the About panel and the subtitle link could both render visible at once (same class of bug as a prior fix on the library page's cards).
-  - Flipped the library page to a dark background (#292929/#EEEFE9), then reverted after re-checking the six reference designs, which use a cream background with black text, not a dark theme.
-  - Made the library page's UI chrome (back link, view toggle, nav buttons) consistently ink-colored instead of blue, to match the page heading.
-  - Fixed the card footer so it tilts as one composition with the rest of the card — it had been a separate element outside the `hover-3d` wrapper and never moved on hover.
-- **Decided:**
-  - Landing and library page visual identity is driven directly by supplied reference images once they arrive, not further open-ended design experimentation — prior original passes (including the three.js turntable) were superseded once references landed.
-  - Wordmark font settled on Unbounded via Google Fonts (no local font file) after testing Elastic (both a licensed file and a temporary stand-in) and a local Unbounded file; body/UI text settled on JetBrains Mono throughout.
-  - Kept all existing OAuth/session/multi-user logic, classification, and playlist-naming untouched throughout — every visual pass in this session was frontend/presentation-layer only.
-- **Next:** Work continued past midnight into 2026-09-23 on the library cards (real vector graphic/description assets, card-click navigation to a per-context detail page, text centering/positioning, background/foreground contrast) — to be logged separately.
+2026-09-22
+Time spent: ~7-8 hrs (commit span 16:15–23:57 IST, from git history — not separately tracked via session transcript)
+Tokens used: not tracked
+Shipped (implemented):
+Rebuilt the landing page as "Track Record": initial brand palette (#FFF8E7 background, #260FC1 title/accent, #F253AD ticker), scoped to the landing page only so the rest of the app kept its existing vinyl-label identity at the time. New logged-out pitch copy about pattern-detection in listening history ("TRACK RECORD finds the patterns hiding in your listening history..."), and the footer ticker rebuilt into a seamless marquee showing "connect to spotify" / "connected to your spotify @[username]" depending on auth state.
+Added a three.js hero graphic (static/js/turntable3d.js): a chrome/brushed-silver platter and tonearm (MeshPhysicalMaterial + a RoomEnvironment IBL for real reflections) with a black vinyl disc, procedural groove texture, and metallic label center — static while logged out, spinning once connected. Later revised the disc to a reflective/prismatic "burned CD" finish (physical iridescence plus an art-directed rainbow-streak texture). Made the disc a real link to /analyze in the connected state, with a hover/focus glow.
+Connected-state CTA/disc label went from "see my library" to "my music library" (briefly "see my library" in between).
+Went through several rounds of wordmark typography: the licensed Elastic font was initially unavailable, so Gluten stood in → the real Elastic.otf arrived and was wired up and verified actually loading (headless-browser check of document.fonts and the computed font) → switched to Unbounded (Google Fonts) + JetBrains Mono for a cleaner geometric look, dropping a per-letter jitter effect tuned for Elastic's hand-drawn wobble → briefly back to Elastic → briefly a local Unbounded-Regular.ttf file → settled by end of day on the Google-Fonts-loaded Unbounded (800 weight) as the wordmark's font, with JetBrains Mono for body/ticker/UI text throughout.
+Rebuilt the landing page a second time, now pixel-matched against three supplied reference frames (disconnected/connected/about states): exact colors sampled from the references (#F0F0EB base, #BEE860 green, #E57BA1 pink ticker, #292929 ink, #260FC1 divider). This removed the three.js turntable graphic entirely (static/js/turntable3d.js deleted) since none of the reference images showed an illustration, replacing the connected-state disc link with a plain "your music library" text link.
+Simplified further to the real 2-screen model the app actually has (logged-out: title + pitch + connect link together; logged-in: title + library link only), removing the click-to-toggle "About" panel from the previous pass.
+Rebuilt the "my music library" page (contexts.html) as daisyUI hover-3d tilt cards — first a generic card design, then rebuilt again to pixel-match six supplied per-category reference card designs (Companion/Trigger/Locked/Spiral/Exploration/Glimpse), with layout, colors, and per-category accents all sampled from those references. context_detection.py's build_contexts()/consolidate_by_category() output feeds the cards unchanged — no classification, playlist-naming, or OAuth logic touched.
+Added single-card (default, with prev/next + keyboard-arrow nav) and grid view modes for the library page, preserving the current card index when switching between them.
+Investigated/fixed:
+The three.js hero graphic (while it still existed) was clipped/hidden behind the fixed ticker bar on short viewports — fixed with viewport-height-aware sizing, verified from 1440x650 through 1440x900.
+The disc's material read as washed out — darkened the base gradient, pushed the streak texture to full saturation, and raised iridescence/metalness and light intensity so the reflections actually showed.
+Found and fixed a [hidden] vs. CSS-specificity bug where the About panel and the subtitle link could both render visible at once (same class of bug as a prior fix on the library page's cards).
+Flipped the library page to a dark background (#292929/#EEEFE9), then reverted after re-checking the six reference designs, which use a cream background with black text, not a dark theme.
+Made the library page's UI chrome (back link, view toggle, nav buttons) consistently ink-colored instead of blue, to match the page heading.
+Fixed the card footer so it tilts as one composition with the rest of the card — it had been a separate element outside the hover-3d wrapper and never moved on hover.
+Decided:
+Landing and library page visual identity is driven directly by supplied reference images once they arrive, not further open-ended design experimentation — prior original passes (including the three.js turntable) were superseded once references landed.
+Wordmark font settled on Unbounded via Google Fonts (no local font file) after testing Elastic (both a licensed file and a temporary stand-in) and a local Unbounded file; body/UI text settled on JetBrains Mono throughout.
+Kept all existing OAuth/session/multi-user logic, classification, and playlist-naming untouched throughout — every visual pass in this session was frontend/presentation-layer only.
+Next: Work continued past midnight into 2026-09-23 on the library cards (real vector graphic/description assets, card-click navigation to a per-context detail page, text centering/positioning, background/foreground contrast) — to be logged separately.
+
+
+
+
+
+
 
