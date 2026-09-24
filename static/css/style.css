@@ -1132,14 +1132,31 @@ a { color: inherit; }
    the original cta_cards.svg asset (its rect only, see the macro's
    comment for why the text moved to a live overlay), sized against
    the 712-wide reference. Inert content inside the card's existing
-   big clickable button, not a second interactive element. */
+   big clickable button, not a second interactive element.
+
+   Absolutely positioned at a fixed distance from the card's bottom
+   edge (measured so it clears .ctx-card__footer, which is pinned to
+   the bottom independently via its own margin-top:auto) -- same
+   technique .ctx-card__number-svg--redesigned already uses to stay
+   put regardless of everything else on the card. Previously flowed
+   normally after the description with a fixed top margin, so its
+   on-screen position actually varied card to card depending on how
+   many lines each category's description wrapped to (a flex
+   margin-top:auto was tried first, but with .ctx-card__footer also
+   auto-margined in the same flex column the two auto margins split
+   the leftover space between them instead of one being truly fixed
+   -- still description-length-dependent, just less so). Absolute
+   positioning removes it from flow entirely, so it's pixel-identical
+   on every card no matter the description length. */
 .ctx-card__cta {
-  position: relative;
+  position: absolute;
   z-index: 1;
-  display: block;
-  width: 39cqw;
+  left: 50%;
+  bottom: 35cqw;
+  transform: translateX(-50%);
+  width: 44cqw;
   aspect-ratio: 243 / 42;
-  margin: 14.5cqw auto 0;
+  margin: 0;
 }
 
 .ctx-card__cta-bg {
@@ -1158,7 +1175,7 @@ a { color: inherit; }
   justify-content: center;
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 3.6cqw;
+  font-size: 4cqw;
   color: #EEEFE9;
   white-space: nowrap;
 }
