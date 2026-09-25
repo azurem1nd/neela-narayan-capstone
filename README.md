@@ -28,7 +28,7 @@ It turns listening behaviour into personal, revisitable playlists.
 
 Claude Code is used as an AI-assisted development agent for implementation, debugging, testing, and iteration.
 
-The core listening analysis is deterministic. A Gemini-powered interpretation layer is being added to replace hardcoded context descriptions with context-specific explanations and playlist descriptions.
+The core listening analysis is deterministic. A Gemini-powered interpretation layer added to replace hardcoded context descriptions with context-specific explanations and playlist descriptions.
 
 ## Tech
 
@@ -52,4 +52,4 @@ The core listening analysis is deterministic. A Gemini-powered interpretation la
 * Spotify playlist creation and reuse
 * Playlist detail and browser playback
 * Open in Spotify
-* Gemini interpretation layer in progress
+* Gemini interpretation layer 
